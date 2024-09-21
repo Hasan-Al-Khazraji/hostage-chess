@@ -99,7 +99,7 @@ exboard_t *stringboard(exboard_t *board)
 	}
 
 	// Fill string with wprison for the first 8 indicies
-	int i = 0;
+	 i = 0;
 	for (; i < 8 && board->wprison[i] != '\0'; i++)
 	{
 		stringfied_board[i + 144] = board->wprison[i];
@@ -121,6 +121,52 @@ exboard_t *stringboard(exboard_t *board)
 		stringfied_board[i + 144] = ' ';
 	}
 
+	// Fill string with bairfield for the first 8 indicies
+	 i = 0;
+	for (; i < 8 && board->bairfield[i] != '\0'; i++)
+	{
+		stringfied_board[i + 18] = board->bairfield[i];
+	}
+	for (; i < 8; i++)
+	{
+		stringfied_board[i + 18] = ' ';
+	}
+
+	// Fill string with bairfield for the next 8 indicies after space
+	i = 9;
+
+	for (; i < 17 && board->bairfield[i - 1] != '\0'; i++)
+	{
+		stringfied_board[i + 18] = board->bairfield[i - 1];
+	}
+	for (; i < 17; i++)
+	{
+		stringfied_board[i + 18] = ' ';
+	}
+
+	// Fill string with wairfield for the first 8 indicies
+	 i = 0;
+	for (; i < 8 && board->wairfield[i] != '\0'; i++)
+	{
+		stringfied_board[i + 126] = board->wairfield[i];
+	}
+	for (; i < 8; i++)
+	{
+		stringfied_board[i + 126] = ' ';
+	}
+
+	// Fill string with wairfield for the next 8 indicies after space
+	i = 9;
+
+	for (; i < 17 && board->wairfield[i - 1] != '\0'; i++)
+	{
+		stringfied_board[i + 126] = board->wairfield[i - 1];
+	}
+	for (; i < 17; i++)
+	{
+		stringfied_board[i + 126] = ' ';
+	}
+
 	// Fill string indicies 36-43 with '-' and 117-124 with '-'
 	for (int i = 36; i < 44; i++)
 	{
@@ -130,4 +176,6 @@ exboard_t *stringboard(exboard_t *board)
 
 	// Set the null terminator at the end of the string
 	stringfied_board[161] = '\0';
+
+	return stringfied_board;
 }
