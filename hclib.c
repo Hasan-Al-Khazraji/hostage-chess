@@ -75,30 +75,59 @@ exboard_t *stringboard(exboard_t *board)
 		stringfied_board[i] = '\n';
 	}
 
-	// Take from bprison and wprison and fill it in, if not put space
-	for (int i = 0; i < 17; i++)
+	// Fill string with bprison for the first 8 indicies
+	int i = 0;
+	for (; i < 8 && board->bprison[i] != '\0'; i++)
 	{
-		// This logic is flawed, pls fix later
-		if (i == 8)
-		{
-			continue;
-		}
-		if (board->bprison[i] != '\0' || board->bprison != NULL)
-		{
-			stringfied_board[i] = board->bprison[i];
-		}
-		else
-		{
-			stringfied_board[i] = ' ';
-		}
-
-		if (board->wprison[i] != '\0' || board->wprison != NULL)
-		{
-			stringfied_board[i+144] = board->wprison[i];
-		}
-		else
-		{
-			stringfied_board[i+144] = ' ';
-		}
+		stringfied_board[i] = board->bprison[i];
 	}
+	for (; i < 8; i++)
+	{
+		stringfied_board[i] = ' ';
+	}
+
+	// Fill string with bprison for the next 8 indicies after space
+	i = 9;
+
+	for (; i < 17 && board->bprison[i - 1] != '\0'; i++)
+	{
+		stringfied_board[i] = board->bprison[i - 1];
+	}
+	for (; i < 17; i++)
+	{
+		stringfied_board[i] = ' ';
+	}
+
+	// Fill string with wprison for the first 8 indicies
+	int i = 0;
+	for (; i < 8 && board->wprison[i] != '\0'; i++)
+	{
+		stringfied_board[i + 144] = board->wprison[i];
+	}
+	for (; i < 8; i++)
+	{
+		stringfied_board[i + 144] = ' ';
+	}
+
+	// Fill string with wprison for the next 8 indicies after space
+	i = 9;
+
+	for (; i < 17 && board->wprison[i - 1] != '\0'; i++)
+	{
+		stringfied_board[i + 144] = board->wprison[i - 1];
+	}
+	for (; i < 17; i++)
+	{
+		stringfied_board[i + 144] = ' ';
+	}
+
+	// Fill string indicies 36-43 with '-' and 117-124 with '-'
+	for (int i = 36; i < 44; i++)
+	{
+		stringfied_board[i] = '-';
+		stringfied_board[i + 81] = '-';
+	}
+
+	// Set the null terminator at the end of the string
+	stringfied_board[161] = '\0';
 }
