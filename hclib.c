@@ -40,5 +40,10 @@ exboard_t *newboard()
 		game->board[0][7] = 'R';
 		game->board[7][7] = 'r';
 
+		game->bprison[0] = '\0';
+		game->bairfield[0] = '\0';
+		game->wprison[0] = '\0';
+		game->wairfield[0] = '\0';
+
 	return game;
 }
