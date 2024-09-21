@@ -22,5 +22,6 @@ typedef struct
 } move_t;
 
 exboard_t *newboard();
+exboard_t *copyboard(exboard_t *board);
 
 #endif
