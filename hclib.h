@@ -1,3 +1,6 @@
+#ifndef HOSTAGE_CHESS_H
+#define HOSTAGE_CHESS_H
+
 typedef char board_t[8][8];
 /* row - rank; 0-7 corresponods to 1-8
  * column - file; 0-7 corresponds to a-h
@@ -17,3 +20,7 @@ typedef struct
     char promotion;
     char hostage;
 } move_t;
+
+exboard_t *newboard();
+
+#endif
