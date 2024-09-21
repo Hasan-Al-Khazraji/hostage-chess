@@ -1,4 +1,6 @@
 #include "hclib.h"
+#include <ctype.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -23,22 +25,12 @@ exboard_t *newboard()
 	}
 
 	// Set up other pieces
-	board->board[0][0] = 'R';
-	board->board[7][0] = 'r';
-	board->board[0][1] = 'N';
-	board->board[7][1] = 'n';
-	board->board[0][2] = 'B';
-	board->board[7][2] = 'b';
-	board->board[0][3] = 'Q';
-	board->board[7][3] = 'q';
-	board->board[0][4] = 'K';
-	board->board[7][4] = 'k';
-	board->board[0][5] = 'B';
-	board->board[7][5] = 'b';
-	board->board[0][6] = 'N';
-	board->board[7][6] = 'n';
-	board->board[0][7] = 'R';
-	board->board[7][7] = 'r';
+	char pieces[8] = {'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'};
+	for (int i = 0; i < 8; i++)
+	{
+		board->board[0][i] = pieces[i];
+		board->board[7][i] = tolower(pieces[i]);
+	}
 
 	board->bprison[0] = '\0';
 	board->bairfield[0] = '\0';
@@ -60,7 +52,7 @@ exboard_t *copyboard(exboard_t *board)
 	return copied_board;
 }
 
-exboard_t *stringboard(exboard_t *board)
+char *stringboard(exboard_t *board)
 {
 	// Malloc space for the stringified board
 	char *stringfied_board = malloc(sizeof(char) * 162);
