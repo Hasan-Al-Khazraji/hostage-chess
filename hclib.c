@@ -174,6 +174,18 @@ exboard_t *stringboard(exboard_t *board)
 		stringfied_board[i + 81] = '-';
 	}
 
+	for (int i = 0; i < 8; i++)
+	{
+		stringfied_board[i + 45] = board->board[7][i];
+		stringfied_board[i + 54] = board->board[6][i];
+		stringfied_board[i + 63] = board->board[5][i];
+		stringfied_board[i + 72] = board->board[4][i];
+		stringfied_board[i + 81] = board->board[3][i];
+		stringfied_board[i + 90] = board->board[2][i];
+		stringfied_board[i + 99] = board->board[1][i];
+		stringfied_board[i + 108] = board->board[0][i];
+	}
+
 	// Set the null terminator at the end of the string
 	stringfied_board[161] = '\0';
 
