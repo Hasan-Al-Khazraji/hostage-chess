@@ -23,5 +23,6 @@ typedef struct
 
 exboard_t *newboard();
 exboard_t *copyboard(exboard_t *board);
+exboard_t *stringboard(exboard_t *board);
 
 #endif
