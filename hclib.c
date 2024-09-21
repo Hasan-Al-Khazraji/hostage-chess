@@ -91,7 +91,7 @@ char *stringboard(exboard_t *board)
 	}
 
 	// Fill string with wprison for the first 8 indicies
-	 i = 0;
+	i = 0;
 	for (; i < 8 && board->wprison[i] != '\0'; i++)
 	{
 		stringfied_board[i + 144] = board->wprison[i];
@@ -114,7 +114,7 @@ char *stringboard(exboard_t *board)
 	}
 
 	// Fill string with bairfield for the first 8 indicies
-	 i = 0;
+	i = 0;
 	for (; i < 8 && board->bairfield[i] != '\0'; i++)
 	{
 		stringfied_board[i + 18] = board->bairfield[i];
@@ -137,7 +137,7 @@ char *stringboard(exboard_t *board)
 	}
 
 	// Fill string with wairfield for the first 8 indicies
-	 i = 0;
+	i = 0;
 	for (; i < 8 && board->wairfield[i] != '\0'; i++)
 	{
 		stringfied_board[i + 126] = board->wairfield[i];
@@ -182,4 +182,44 @@ char *stringboard(exboard_t *board)
 	stringfied_board[161] = '\0';
 
 	return stringfied_board;
+}
+
+exboard_t *apply_move(exboard_t *board, move_t *move)
+{
+	exboard_t *new_board = copyboard(board);
+	if (!new_board)
+	{
+		return NULL;
+	}
+
+	// USED https://www.geeksforgeeks.org/how-to-append-a-character-to-a-string-in-c/ for strncat
+	// Send piece to appropriate prision
+	if (new_board->board[move->to_i][move->to_j] != ' ')
+	{
+		// Send white piece to bprision
+		if (isupper(new_board->board[move->to_i][move->to_j]))
+		{
+			strncat(new_board->bprison, &new_board->board[move->to_i][move->to_j], 1);
+		}
+		// send black piece to wprision
+		else
+		{
+			strncat(new_board->wprison, &new_board->board[move->to_i][move->to_j], 1);
+		}
+	}
+
+	// Move piece (regardless of other pieces or legality)
+	// if promotion, make old from blank, make to a promoted piece (regardless if in prison or not)
+	if (move->promotion == ' ')
+	{
+		new_board->board[move->to_i][move->to_j] = new_board->board[move->from_i][move->from_j];
+		new_board->board[move->from_i][move->from_j] = ' ';
+	}
+	else
+	{
+		new_board->board[move->to_i][move->to_j] = move->promotion;
+		new_board->board[move->from_i][move->from_j] = ' ';
+	}
+
+	return new_board;
 }
