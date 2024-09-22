@@ -1,16 +1,19 @@
 CC = clang
-CFLAGS = -std=c99 -Wall -pedantic
+CFLAGS = -Wall -std=c99 -pedantic
 
-all: test1
-
-hclib.o: hclib.c hclib.h
-	$(CC) $(CFLAGS) -c hclib.c -o hclib.o
-
-test1.o: test1.c hclib.h
-	$(CC) $(CFLAGS) -c test1.c -o test1.o
-
-test1: test1.o hclib.o
-	$(CC) test1.o hclib.o -o test1
+all: main
 
 clean:
-	rm -f *.o test1
+	rm -f *.o *.so main
+
+libhclib.so: hclib.o
+	$(CC) hclib.o -shared -o libhclib.so
+
+hclib.o: hclib.c hclib.h
+	$(CC) $(CFLAGS) -c hclib.c -fPIC -o hclib.o
+
+main.o: test1.c hclib.h
+	$(CC) $(CFLAGS) -c test1.c -o main.o
+
+main: test1.o libhclib.so
+	$(CC) test1.o -L. -lhclib -o main
