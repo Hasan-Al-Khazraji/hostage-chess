@@ -381,3 +381,36 @@ exboard_t *apply_move(exboard_t *board, move_t *move)
 
 	return new_board;
 }
+
+move_t **moves (board_t *board, int from_i, int from_j) {
+	
+	char selectedPiece = *board[from_i][from_j];
+	switch (tolower(selectedPiece)) {
+		case 'p':
+			// pawn_moves
+			// return the value from this function
+			break;
+		case 'r':
+			// rook_moves
+			// return the value from this function
+			break;
+		case 'n':
+			// knight_moves
+			// return the value from this function
+			break;
+		case 'b':
+			// bishop_moves
+			// return the value from this function
+			break;
+		case 'q':
+			// queenmoves
+			// return the value from this function
+			break;
+		case 'k':
+			// kingmoves
+			// return the value from this function
+			break;
+	}
+	printf("%c\n", selectedPiece);
+	return NULL;
+}

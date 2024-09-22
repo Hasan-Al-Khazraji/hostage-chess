@@ -1,0 +1,5 @@
+.vscode/
+*.o
+*.so
+main
+test1.c
