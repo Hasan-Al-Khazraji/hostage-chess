@@ -249,6 +249,22 @@ exboard_t *apply_move(exboard_t *board, move_t *move)
 		}
 	}
 
+	// En Passant
+	if ((new_board->board[move->from_i][move->from_j] == 'P' || new_board->board[move->from_i][move->from_j] == 'p') && (abs(move->to_i - move->from_i) == 1 && abs(move->to_j - move->from_j) == 1))
+	{
+		// Send white piece to bprision
+		if (isupper(new_board->board[move->from_i][move->to_j]))
+		{
+			strncat(new_board->bprison, &new_board->board[move->from_i][move->to_j], 1);
+		}
+		// send black piece to wprision
+		else
+		{
+			strncat(new_board->wprison, &new_board->board[move->from_i][move->to_j], 1);
+		}
+		new_board->board[move->from_i][move->to_j] = ' ';
+	}
+
 	// Move piece (regardless of other pieces or legality)
 	// if promotion, make old from blank, make to a promoted piece (regardless if in prison or not)
 	if (move->promotion == ' ')
