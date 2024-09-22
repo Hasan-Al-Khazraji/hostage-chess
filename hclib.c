@@ -32,6 +32,11 @@ exboard_t *newboard()
 		board->board[7][i] = tolower(pieces[i]);
 	}
 
+	memset(board->bprison, 0, sizeof(board->bprison));
+	memset(board->bairfield, 0, sizeof(board->bairfield));
+	memset(board->wprison, 0, sizeof(board->wprison));
+	memset(board->wairfield, 0, sizeof(board->wairfield));
+
 	board->bprison[0] = '\0';
 	board->bairfield[0] = '\0';
 	board->wprison[0] = '\0';
@@ -302,6 +307,58 @@ exboard_t *apply_move(exboard_t *board, move_t *move)
 			else
 			{
 				continue;
+			}
+		}
+		new_board->board[move->to_i][move->to_j] = droppedChar;
+	}
+	// bPrison
+	else if (move->from_i == 9)
+	{
+		char droppedChar = '\0';
+		for (int i = 0; i < 16; i++)
+		{
+			if (new_board->bprison[i] == move->promotion)
+			{
+				droppedChar = new_board->bprison[i];
+				memmove(&new_board->bprison[i], &new_board->bprison[i + 1], (strlen(new_board->bprison) - i));
+				break;
+			}
+		}
+		char hostageChar = '\0';
+		for (int i = 0; i < 16; i++)
+		{
+			if (new_board->wprison[i] == move->hostage)
+			{
+				hostageChar = new_board->wprison[i];
+				memmove(&new_board->wprison[i], &new_board->wprison[i + 1], strlen(new_board->wprison) - i);
+				strncat(new_board->bairfield, &hostageChar, 1);
+				break;
+			}
+		}
+		new_board->board[move->to_i][move->to_j] = droppedChar;
+	}
+	// wPrison
+	else if (move->from_i == -2)
+	{
+		char droppedChar = '\0';
+		for (int i = 0; i < 16; i++)
+		{
+			if (new_board->wprison[i] == move->promotion)
+			{
+				droppedChar = new_board->wprison[i];
+				memmove(&new_board->wprison[i], &new_board->wprison[i + 1], strlen(new_board->wprison) - i);
+				break;
+			}
+		}
+		char hostageChar = '\0';
+		for (int i = 0; i < 16; i++)
+		{
+			if (new_board->bprison[i] == move->hostage)
+			{
+				hostageChar = new_board->bprison[i];
+				memmove(&new_board->bprison[i], &new_board->bprison[i + 1], strlen(new_board->bprison) - i);
+				strncat(new_board->wairfield, &hostageChar, 1);
+				break;
 			}
 		}
 		new_board->board[move->to_i][move->to_j] = droppedChar;
