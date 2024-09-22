@@ -208,6 +208,47 @@ exboard_t *apply_move(exboard_t *board, move_t *move)
 		}
 	}
 
+	// CASTLING
+	if ((new_board->board[move->from_i][move->from_j] == 'K' || new_board->board[move->from_i][move->from_j] == 'k') && abs(move->to_j - move->from_j) > 1)
+	{
+		// Castle to the right
+		if (move->to_j - move->from_j > 1)
+		{
+			int j = move->to_j + 1;
+			for (; j < 8; j++)
+			{
+				if (new_board->board[move->to_i][j] == ' ')
+				{
+					continue;
+				}
+				else
+				{
+					break;
+				}
+			}
+			new_board->board[move->to_i][move->to_j - 1] = new_board->board[move->to_i][j];
+			new_board->board[move->to_i][j] = ' ';
+		}
+		// Castle to the left
+		else if (move->from_j - move->to_j > 1)
+		{
+			int j = move->to_j - 1;
+			for (; j > 0; j--)
+			{
+				if (new_board->board[move->to_i][j] == ' ')
+				{
+					continue;
+				}
+				else
+				{
+					break;
+				}
+			}
+			new_board->board[move->to_i][move->to_j + 1] = new_board->board[move->to_i][j];
+			new_board->board[move->to_i][j] = ' ';
+		}
+	}
+
 	// Move piece (regardless of other pieces or legality)
 	// if promotion, make old from blank, make to a promoted piece (regardless if in prison or not)
 	if (move->promotion == ' ')
