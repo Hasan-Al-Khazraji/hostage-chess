@@ -265,17 +265,61 @@ exboard_t *apply_move(exboard_t *board, move_t *move)
 		new_board->board[move->from_i][move->to_j] = ' ';
 	}
 
-	// Move piece (regardless of other pieces or legality)
-	// if promotion, make old from blank, make to a promoted piece (regardless if in prison or not)
-	if (move->promotion == ' ')
+	// Drop from Air Field or Prison
+	// bAirfield
+	if (move->from_i == 8)
 	{
-		new_board->board[move->to_i][move->to_j] = new_board->board[move->from_i][move->from_j];
-		new_board->board[move->from_i][move->from_j] = ' ';
+		char droppedChar = '\0';
+		for (int i = 0; i < 16; i++)
+		{
+			if (new_board->bairfield[i] == move->promotion)
+			{
+				droppedChar = new_board->bairfield[i];
+				// https://stackoverflow.com/questions/5457608/how-to-remove-the-character-at-a-given-index-from-a-string-in-c for the memmove
+				memmove(&new_board->bairfield[i], &new_board->bairfield[i + 1], strlen(new_board->bairfield) - i);
+				break;
+			}
+			else
+			{
+				continue;
+			}
+		}
+		new_board->board[move->to_i][move->to_j] = droppedChar;
 	}
-	else
+	// wAirfield
+	else if (move->from_i == -1)
 	{
-		new_board->board[move->to_i][move->to_j] = move->promotion;
-		new_board->board[move->from_i][move->from_j] = ' ';
+		char droppedChar = '\0';
+		for (int i = 0; i < 16; i++)
+		{
+			if (new_board->wairfield[i] == move->promotion)
+			{
+				droppedChar = new_board->wairfield[i];
+				// https://stackoverflow.com/questions/5457608/how-to-remove-the-character-at-a-given-index-from-a-string-in-c for the memmove
+				memmove(&new_board->wairfield[i], &new_board->wairfield[i + 1], strlen(new_board->wairfield) - i);
+				break;
+			}
+			else
+			{
+				continue;
+			}
+		}
+		new_board->board[move->to_i][move->to_j] = droppedChar;
+	}
+	else // Happy path
+	{
+		// Move piece (regardless of other pieces or legality)
+		// if promotion, make old from blank, make to a promoted piece (regardless if in prison or not)
+		if (move->promotion == ' ')
+		{
+			new_board->board[move->to_i][move->to_j] = new_board->board[move->from_i][move->from_j];
+			new_board->board[move->from_i][move->from_j] = ' ';
+		}
+		else
+		{
+			new_board->board[move->to_i][move->to_j] = move->promotion;
+			new_board->board[move->from_i][move->from_j] = ' ';
+		}
 	}
 
 	return new_board;
