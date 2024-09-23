@@ -5,15 +5,30 @@
 #include <string.h>
 
 // Helper Functions
-int checkForPiece(char piece) {
+int checkForPiece(char piece)
+{
 	char allPieces[] = "RNBQKPrnbqkp";
-	for (int i = 0; allPieces[i] != '\0'; i++) {
-        if (allPieces[i] == piece) {
-            return 0;  // Character is found
-            break;      // Exit the loop early as we found the character
-        }
-    }
-	return 1;  // Character is not found
+	for (int i = 0; allPieces[i] != '\0'; i++)
+	{
+		if (allPieces[i] == piece)
+		{
+			return 0; // Character is found
+			break;	  // Exit the loop early as we found the character
+		}
+	}
+	return 1; // Character is not found
+}
+
+int min(int a, int b)
+{
+	if (a < b)
+	{
+		return a;
+	}
+	else
+	{
+		return b;
+	}
 }
 
 exboard_t *newboard()
@@ -416,6 +431,7 @@ move_t **moves(board_t *board, int from_i, int from_j)
 		break;
 	case 'b':
 		// bishop_moves
+		return bishopmoves(board, from_i, from_j, 1);
 		// return the value from this function
 		break;
 	case 'q':
@@ -442,6 +458,7 @@ move_t **moves(board_t *board, int from_i, int from_j)
 		break;
 	case 'B':
 		// bishop_moves
+		return bishopmoves(board, from_i, from_j, 0);
 		// return the value from this function
 		break;
 	case 'Q':
@@ -484,7 +501,7 @@ move_t **king_moves(board_t *board, int from_i, int from_j, int colour)
 	{
 		if (possible_moves[i][0] >= 0 && possible_moves[i][0] < 8 && possible_moves[i][1] >= 0 && possible_moves[i][1] < 8)
 		{
-			char target_piece = (* board)[possible_moves[i][0]][possible_moves[i][1]];
+			char target_piece = (*board)[possible_moves[i][0]][possible_moves[i][1]];
 			if (checkForPiece(target_piece) == 1 || (colour == 0 && islower(target_piece)) || (colour == 1 && isupper(target_piece)))
 			{
 				king_moves_list[valid_move_counter] = malloc(sizeof(move_t));
@@ -530,7 +547,7 @@ move_t **knightmoves(board_t *board, int from_i, int from_j, int colour)
 	{
 		if (possible_moves[i][0] >= 0 && possible_moves[i][0] < 8 && possible_moves[i][1] >= 0 && possible_moves[i][1] < 8)
 		{
-			char target_piece = (* board)[possible_moves[i][0]][possible_moves[i][1]];
+			char target_piece = (*board)[possible_moves[i][0]][possible_moves[i][1]];
 			if (checkForPiece(target_piece) == 1 || (colour == 0 && islower(target_piece)) || (colour == 1 && isupper(target_piece)))
 			{
 				knight_moves_list[valid_move_counter] = malloc(sizeof(move_t));
@@ -547,4 +564,166 @@ move_t **knightmoves(board_t *board, int from_i, int from_j, int colour)
 	knight_moves_list[valid_move_counter] = NULL;
 	knight_moves_list = realloc(knight_moves_list, (valid_move_counter + 1) * sizeof(move_t *));
 	return knight_moves_list;
+}
+
+move_t **bishopmoves(board_t *board, int from_i, int from_j, int colour)
+{
+	move_t **bishop_moves_list = malloc(16 * sizeof(move_t *));
+
+	// Check if malloc failed
+	if (!bishop_moves_list)
+	{
+		return NULL;
+	}
+
+	// Optimal approach from https://www.geeksforgeeks.org/all-possible-points-where-bishops-can-reach-in-one-move/
+	int topLeft = min(from_i, from_j);
+	int topRight = min(from_i, 7 - from_j);
+	int bottomLeft = min(7 - from_i, from_j);
+	int bottomRight = min(7 - from_i, 7 - from_j);
+
+	int valid_move_counter = 0;
+
+	// Top left
+	for (int i = 1; i <= topLeft; i++)
+	{
+		// if it is a space
+		if (checkForPiece((*board)[from_i + i][from_j - i]) == 1)
+		{
+			bishop_moves_list[valid_move_counter] = malloc(sizeof(move_t));
+			bishop_moves_list[valid_move_counter]->from_i = from_i;
+			bishop_moves_list[valid_move_counter]->from_j = from_j;
+			bishop_moves_list[valid_move_counter]->to_i = from_i + i;
+			bishop_moves_list[valid_move_counter]->to_j = from_j - i;
+			bishop_moves_list[valid_move_counter]->promotion = ' ';
+			bishop_moves_list[valid_move_counter]->hostage = ' ';
+			valid_move_counter++;
+		}
+		// if it is a killable piece
+		else if ((colour == 0 && islower((*board)[from_i + i][from_j - i])) || (colour == 1 && isupper((*board)[from_i + i][from_j - i])))
+		{
+			bishop_moves_list[valid_move_counter] = malloc(sizeof(move_t));
+			bishop_moves_list[valid_move_counter]->from_i = from_i;
+			bishop_moves_list[valid_move_counter]->from_j = from_j;
+			bishop_moves_list[valid_move_counter]->to_i = from_i + i;
+			bishop_moves_list[valid_move_counter]->to_j = from_j - i;
+			bishop_moves_list[valid_move_counter]->promotion = ' ';
+			bishop_moves_list[valid_move_counter]->hostage = ' ';
+			valid_move_counter++;
+			break;
+		}
+		// if it is a same color piece
+		else
+		{
+			break;
+		}
+	}
+
+	// Top right
+	for (int i = 1; i <= topRight; i++)
+	{
+		// if it is a space
+		if (checkForPiece((*board)[from_i + i][from_j + i]) == 1)
+		{
+			bishop_moves_list[valid_move_counter] = malloc(sizeof(move_t));
+			bishop_moves_list[valid_move_counter]->from_i = from_i;
+			bishop_moves_list[valid_move_counter]->from_j = from_j;
+			bishop_moves_list[valid_move_counter]->to_i = from_i + i;
+			bishop_moves_list[valid_move_counter]->to_j = from_j + i;
+			bishop_moves_list[valid_move_counter]->promotion = ' ';
+			bishop_moves_list[valid_move_counter]->hostage = ' ';
+			valid_move_counter++;
+		}
+		// if it is a killable piece
+		else if ((colour == 0 && islower((*board)[from_i + i][from_j + i])) || (colour == 1 && isupper((*board)[from_i + i][from_j + i])))
+		{
+			bishop_moves_list[valid_move_counter] = malloc(sizeof(move_t));
+			bishop_moves_list[valid_move_counter]->from_i = from_i;
+			bishop_moves_list[valid_move_counter]->from_j = from_j;
+			bishop_moves_list[valid_move_counter]->to_i = from_i + i;
+			bishop_moves_list[valid_move_counter]->to_j = from_j + i;
+			bishop_moves_list[valid_move_counter]->promotion = ' ';
+			bishop_moves_list[valid_move_counter]->hostage = ' ';
+			valid_move_counter++;
+			break;
+		}
+		// if it is a same color piece
+		else
+		{
+			break;
+		}
+	}
+
+	// Bottom left
+	for (int i = 1; i <= bottomLeft; i++)
+	{
+		// if it is a space
+		if (checkForPiece((*board)[from_i - i][from_j - i]) == 1)
+		{
+			bishop_moves_list[valid_move_counter] = malloc(sizeof(move_t));
+			bishop_moves_list[valid_move_counter]->from_i = from_i;
+			bishop_moves_list[valid_move_counter]->from_j = from_j;
+			bishop_moves_list[valid_move_counter]->to_i = from_i - i;
+			bishop_moves_list[valid_move_counter]->to_j = from_j - i;
+			bishop_moves_list[valid_move_counter]->promotion = ' ';
+			bishop_moves_list[valid_move_counter]->hostage = ' ';
+			valid_move_counter++;
+		}
+		// if it is a killable piece
+		else if ((colour == 0 && islower((*board)[from_i - i][from_j - i])) || (colour == 1 && isupper((*board)[from_i - i][from_j - i])))
+		{
+			bishop_moves_list[valid_move_counter] = malloc(sizeof(move_t));
+			bishop_moves_list[valid_move_counter]->from_i = from_i;
+			bishop_moves_list[valid_move_counter]->from_j = from_j;
+			bishop_moves_list[valid_move_counter]->to_i = from_i - i;
+			bishop_moves_list[valid_move_counter]->to_j = from_j - i;
+			bishop_moves_list[valid_move_counter]->promotion = ' ';
+			bishop_moves_list[valid_move_counter]->hostage = ' ';
+			valid_move_counter++;
+			break;
+		}
+		// if it is a same color piece
+		else
+		{
+			break;
+		}
+	}
+
+	// Bottom right
+	for (int i = 1; i <= bottomRight; i++)
+	{
+		// if it is a space
+		if (checkForPiece((*board)[from_i - i][from_j + i]) == 1)
+		{
+			bishop_moves_list[valid_move_counter] = malloc(sizeof(move_t));
+			bishop_moves_list[valid_move_counter]->from_i = from_i;
+			bishop_moves_list[valid_move_counter]->from_j = from_j;
+			bishop_moves_list[valid_move_counter]->to_i = from_i - i;
+			bishop_moves_list[valid_move_counter]->to_j = from_j + i;
+			bishop_moves_list[valid_move_counter]->promotion = ' ';
+			bishop_moves_list[valid_move_counter]->hostage = ' ';
+			valid_move_counter++;
+		}
+		// if it is a killable piece
+		else if ((colour == 0 && islower((*board)[from_i - i][from_j + i])) || (colour == 1 && isupper((*board)[from_i - i][from_j + i])))
+		{
+			bishop_moves_list[valid_move_counter] = malloc(sizeof(move_t));
+			bishop_moves_list[valid_move_counter]->from_i = from_i;
+			bishop_moves_list[valid_move_counter]->from_j = from_j;
+			bishop_moves_list[valid_move_counter]->to_i = from_i - i;
+			bishop_moves_list[valid_move_counter]->to_j = from_j + i;
+			bishop_moves_list[valid_move_counter]->promotion = ' ';
+			bishop_moves_list[valid_move_counter]->hostage = ' ';
+			valid_move_counter++;
+			break;
+		}
+		// if it is a same color piece
+		else
+		{
+			break;
+		}
+	}
+	bishop_moves_list[valid_move_counter] = NULL;
+	bishop_moves_list = realloc(bishop_moves_list, (valid_move_counter + 1) * sizeof(move_t *));
+	return bishop_moves_list;
 }
