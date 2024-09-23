@@ -4,6 +4,18 @@
 #include <stdlib.h>
 #include <string.h>
 
+// Helper Functions
+int checkForPiece(char piece) {
+	char allPieces[] = "RNBQKPrnbqkp";
+	for (int i = 0; allPieces[i] != '\0'; i++) {
+        if (allPieces[i] == piece) {
+            return 0;  // Character is found
+            break;      // Exit the loop early as we found the character
+        }
+    }
+	return 1;  // Character is not found
+}
+
 exboard_t *newboard()
 {
 	exboard_t *board = malloc(sizeof(exboard_t));
@@ -255,6 +267,7 @@ exboard_t *apply_move(exboard_t *board, move_t *move)
 	}
 
 	// En Passant
+	// Make sure there is a piece behind it
 	if ((new_board->board[move->from_i][move->from_j] == 'P' || new_board->board[move->from_i][move->from_j] == 'p') && (abs(move->to_i - move->from_i) == 1 && abs(move->to_j - move->from_j) == 1))
 	{
 		// Send white piece to bprision
@@ -382,35 +395,108 @@ exboard_t *apply_move(exboard_t *board, move_t *move)
 	return new_board;
 }
 
-move_t **moves (board_t *board, int from_i, int from_j) {
-	
-	char selectedPiece = *board[from_i][from_j];
-	switch (tolower(selectedPiece)) {
-		case 'p':
-			// pawn_moves
-			// return the value from this function
-			break;
-		case 'r':
-			// rook_moves
-			// return the value from this function
-			break;
-		case 'n':
-			// knight_moves
-			// return the value from this function
-			break;
-		case 'b':
-			// bishop_moves
-			// return the value from this function
-			break;
-		case 'q':
-			// queenmoves
-			// return the value from this function
-			break;
-		case 'k':
-			// kingmoves
-			// return the value from this function
-			break;
+move_t **moves(board_t *board, int from_i, int from_j)
+{
+
+	char selectedPiece = (*board)[from_i][from_j];
+	switch (selectedPiece)
+	{
+	case 'p':
+		// pawn_moves
+		// return the value from this function
+		break;
+	case 'r':
+		// rook_moves
+		// return the value from this function
+		break;
+	case 'n':
+		// knight_moves
+		// return the value from this function
+		break;
+	case 'b':
+		// bishop_moves
+		// return the value from this function
+		break;
+	case 'q':
+		// queenmoves
+		// return the value from this function
+		break;
+	case 'k':
+		// kingmoves
+		return king_moves(board, from_i, from_j, 1);
+		// return the value from this function
+		break;
+	case 'P':
+		// pawn_moves
+		// return the value from this function
+		break;
+	case 'R':
+		// rook_moves
+		// return the value from this function
+		break;
+	case 'N':
+		// knight_moves
+		// return the value from this function
+		break;
+	case 'B':
+		// bishop_moves
+		// return the value from this function
+		break;
+	case 'Q':
+		// queenmoves
+		// return the value from this function
+		break;
+	case 'K':
+		// kingmoves
+		return king_moves(board, from_i, from_j, 0);
+		// return the value from this function
+		break;
 	}
-	printf("%c\n", selectedPiece);
 	return NULL;
+}
+
+move_t **king_moves(board_t *board, int from_i, int from_j, int colour)
+{
+	move_t **king_moves_list = malloc(9 * sizeof(move_t *));
+
+	// Check if malloc failed
+	if (!king_moves_list)
+	{
+		return NULL;
+	}
+
+	// Possible Moves
+	int possible_moves[8][2] = {
+		{from_i - 1, from_j - 1},
+		{from_i - 1, from_j},
+		{from_i - 1, from_j + 1},
+		{from_i, from_j - 1},
+		{from_i, from_j + 1},
+		{from_i + 1, from_j - 1},
+		{from_i + 1, from_j},
+		{from_i + 1, from_j + 1}};
+
+	// Check if the move is valid
+	int valid_move_counter = 0;
+	for (int i = 0; i < 8; i++)
+	{
+		if (possible_moves[i][0] >= 0 && possible_moves[i][0] < 8 && possible_moves[i][1] >= 0 && possible_moves[i][1] < 8)
+		{
+			char target_piece = (* board)[possible_moves[i][0]][possible_moves[i][1]];
+			if (checkForPiece(target_piece) == 1 || (colour == 0 && islower(target_piece)) || (colour == 1 && isupper(target_piece)))
+			{
+				king_moves_list[valid_move_counter] = malloc(sizeof(move_t));
+				king_moves_list[valid_move_counter]->from_i = from_i;
+				king_moves_list[valid_move_counter]->from_j = from_j;
+				king_moves_list[valid_move_counter]->to_i = possible_moves[i][0];
+				king_moves_list[valid_move_counter]->to_j = possible_moves[i][1];
+				king_moves_list[valid_move_counter]->promotion = ' ';
+				king_moves_list[valid_move_counter]->hostage = ' ';
+				valid_move_counter++;
+			}
+		}
+	}
+	king_moves_list[valid_move_counter] = NULL;
+	king_moves_list = realloc(king_moves_list, (valid_move_counter + 1) * sizeof(move_t *));
+	return king_moves_list;
 }

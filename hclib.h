@@ -25,6 +25,7 @@ exboard_t *newboard();
 exboard_t *copyboard(exboard_t *board);
 char *stringboard(exboard_t *board);
 exboard_t *apply_move(exboard_t *board, move_t *move);
-move_t **moves (board_t *board, int from_i, int from_j);
+move_t **moves(board_t *board, int from_i, int from_j);
+move_t **king_moves(board_t *board, int from_i, int from_j, int colour);
 
 #endif
