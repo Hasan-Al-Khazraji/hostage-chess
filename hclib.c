@@ -411,6 +411,7 @@ move_t **moves(board_t *board, int from_i, int from_j)
 		break;
 	case 'n':
 		// knight_moves
+		return knightmoves(board, from_i, from_j, 1);
 		// return the value from this function
 		break;
 	case 'b':
@@ -436,6 +437,7 @@ move_t **moves(board_t *board, int from_i, int from_j)
 		break;
 	case 'N':
 		// knight_moves
+		return knightmoves(board, from_i, from_j, 0);
 		// return the value from this function
 		break;
 	case 'B':
@@ -499,4 +501,50 @@ move_t **king_moves(board_t *board, int from_i, int from_j, int colour)
 	king_moves_list[valid_move_counter] = NULL;
 	king_moves_list = realloc(king_moves_list, (valid_move_counter + 1) * sizeof(move_t *));
 	return king_moves_list;
+}
+
+move_t **knightmoves(board_t *board, int from_i, int from_j, int colour)
+{
+	move_t **knight_moves_list = malloc(9 * sizeof(move_t *));
+
+	// Check if malloc failed
+	if (!knight_moves_list)
+	{
+		return NULL;
+	}
+
+	// Possible Moves
+	int possible_moves[8][2] = {
+		{from_i + 2, from_j + 1},
+		{from_i + 1, from_j + 2},
+		{from_i - 2, from_j + 1},
+		{from_i - 1, from_j + 2},
+		{from_i + 2, from_j - 1},
+		{from_i + 1, from_j - 2},
+		{from_i - 2, from_j - 1},
+		{from_i - 1, from_j - 2}};
+
+	// Check if the move is valid
+	int valid_move_counter = 0;
+	for (int i = 0; i < 8; i++)
+	{
+		if (possible_moves[i][0] >= 0 && possible_moves[i][0] < 8 && possible_moves[i][1] >= 0 && possible_moves[i][1] < 8)
+		{
+			char target_piece = (* board)[possible_moves[i][0]][possible_moves[i][1]];
+			if (checkForPiece(target_piece) == 1 || (colour == 0 && islower(target_piece)) || (colour == 1 && isupper(target_piece)))
+			{
+				knight_moves_list[valid_move_counter] = malloc(sizeof(move_t));
+				knight_moves_list[valid_move_counter]->from_i = from_i;
+				knight_moves_list[valid_move_counter]->from_j = from_j;
+				knight_moves_list[valid_move_counter]->to_i = possible_moves[i][0];
+				knight_moves_list[valid_move_counter]->to_j = possible_moves[i][1];
+				knight_moves_list[valid_move_counter]->promotion = ' ';
+				knight_moves_list[valid_move_counter]->hostage = ' ';
+				valid_move_counter++;
+			}
+		}
+	}
+	knight_moves_list[valid_move_counter] = NULL;
+	knight_moves_list = realloc(knight_moves_list, (valid_move_counter + 1) * sizeof(move_t *));
+	return knight_moves_list;
 }
