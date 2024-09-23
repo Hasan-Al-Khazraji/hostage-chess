@@ -437,6 +437,7 @@ move_t **moves(board_t *board, int from_i, int from_j)
 		break;
 	case 'q':
 		// queenmoves
+		return queenmoves(board, from_i, from_j, 1);
 		// return the value from this function
 		break;
 	case 'k':
@@ -465,6 +466,7 @@ move_t **moves(board_t *board, int from_i, int from_j)
 		break;
 	case 'Q':
 		// queenmoves
+		return queenmoves(board, from_i, from_j, 0);
 		// return the value from this function
 		break;
 	case 'K':
@@ -889,4 +891,31 @@ move_t **rookmoves(board_t *board, int from_i, int from_j, int colour)
 	rook_moves_list[valid_move_counter] = NULL;
 	rook_moves_list = realloc(rook_moves_list, (valid_move_counter + 1) * sizeof(move_t *));
 	return rook_moves_list;
+}
+
+move_t **queenmoves(board_t *board, int from_i, int from_j, int colour)
+{
+	move_t **queen_moves_list = malloc(32 * sizeof(move_t *));
+	if (!queen_moves_list)
+	{
+		return NULL;
+	}
+
+	move_t **straight_moves = rookmoves(board, from_i, from_j, colour);
+	move_t **diagonal_moves = bishopmoves(board, from_i, from_j, colour);
+	int i = 0;
+	for (; straight_moves[i] != NULL; i++)
+	{
+		queen_moves_list[i] = straight_moves[i];
+	}
+	for (int j = 0; diagonal_moves[j] != NULL; i++, j++)
+	{
+		queen_moves_list[i] = diagonal_moves[j];
+	}
+
+	queen_moves_list[i] = NULL;
+	free(straight_moves);
+	free(diagonal_moves);
+	queen_moves_list = realloc(queen_moves_list, (i + 1) * sizeof(move_t *));
+	return queen_moves_list;
 }

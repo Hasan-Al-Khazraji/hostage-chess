@@ -30,5 +30,6 @@ move_t **king_moves(board_t *board, int from_i, int from_j, int colour);
 move_t **knightmoves(board_t *board, int from_i, int from_j, int colour);
 move_t **bishopmoves(board_t *board, int from_i, int from_j, int colour);
 move_t **rookmoves(board_t *board, int from_i, int from_j, int colour);
+move_t **queenmoves( board_t *board, int from_i, int from_j, int colour );
 
 #endif
