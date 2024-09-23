@@ -422,6 +422,7 @@ move_t **moves(board_t *board, int from_i, int from_j)
 		break;
 	case 'r':
 		// rook_moves
+		return rookmoves(board, from_i, from_j, 1);
 		// return the value from this function
 		break;
 	case 'n':
@@ -449,6 +450,7 @@ move_t **moves(board_t *board, int from_i, int from_j)
 		break;
 	case 'R':
 		// rook_moves
+		return rookmoves(board, from_i, from_j, 0);
 		// return the value from this function
 		break;
 	case 'N':
@@ -726,4 +728,165 @@ move_t **bishopmoves(board_t *board, int from_i, int from_j, int colour)
 	bishop_moves_list[valid_move_counter] = NULL;
 	bishop_moves_list = realloc(bishop_moves_list, (valid_move_counter + 1) * sizeof(move_t *));
 	return bishop_moves_list;
+}
+
+move_t **rookmoves(board_t *board, int from_i, int from_j, int colour)
+{
+	move_t **rook_moves_list = malloc(16 * sizeof(move_t *));
+
+	// Check if malloc failed
+	if (!rook_moves_list)
+	{
+		return NULL;
+	}
+
+	int up = 7 - from_i;
+	int right = 7 - from_j;
+	int down = from_i;
+	int left = from_j;
+
+	int valid_move_counter = 0;
+
+	// Up
+	for (int i = 1; i <= up; i++)
+	{
+		// if it is a space
+		if (checkForPiece((*board)[from_i + i][from_j]) == 1)
+		{
+			rook_moves_list[valid_move_counter] = malloc(sizeof(move_t));
+			rook_moves_list[valid_move_counter]->from_i = from_i;
+			rook_moves_list[valid_move_counter]->from_j = from_j;
+			rook_moves_list[valid_move_counter]->to_i = from_i + i;
+			rook_moves_list[valid_move_counter]->to_j = from_j;
+			rook_moves_list[valid_move_counter]->promotion = ' ';
+			rook_moves_list[valid_move_counter]->hostage = ' ';
+			valid_move_counter++;
+		}
+		// if it is a killable piece
+		else if ((colour == 0 && islower((*board)[from_i + i][from_j])) || (colour == 1 && isupper((*board)[from_i + i][from_j])))
+		{
+			rook_moves_list[valid_move_counter] = malloc(sizeof(move_t));
+			rook_moves_list[valid_move_counter]->from_i = from_i;
+			rook_moves_list[valid_move_counter]->from_j = from_j;
+			rook_moves_list[valid_move_counter]->to_i = from_i + i;
+			rook_moves_list[valid_move_counter]->to_j = from_j;
+			rook_moves_list[valid_move_counter]->promotion = ' ';
+			rook_moves_list[valid_move_counter]->hostage = ' ';
+			valid_move_counter++;
+			break;
+		}
+		// if it is a same color piece
+		else
+		{
+			break;
+		}
+	}
+
+	// Right
+	for (int i = 1; i <= right; i++)
+	{
+		// if it is a space
+		if (checkForPiece((*board)[from_i][from_j + i]) == 1)
+		{
+			rook_moves_list[valid_move_counter] = malloc(sizeof(move_t));
+			rook_moves_list[valid_move_counter]->from_i = from_i;
+			rook_moves_list[valid_move_counter]->from_j = from_j;
+			rook_moves_list[valid_move_counter]->to_i = from_i;
+			rook_moves_list[valid_move_counter]->to_j = from_j + i;
+			rook_moves_list[valid_move_counter]->promotion = ' ';
+			rook_moves_list[valid_move_counter]->hostage = ' ';
+			valid_move_counter++;
+		}
+		// if it is a killable piece
+		else if ((colour == 0 && islower((*board)[from_i][from_j + i])) || (colour == 1 && isupper((*board)[from_i][from_j + i])))
+		{
+			rook_moves_list[valid_move_counter] = malloc(sizeof(move_t));
+			rook_moves_list[valid_move_counter]->from_i = from_i;
+			rook_moves_list[valid_move_counter]->from_j = from_j;
+			rook_moves_list[valid_move_counter]->to_i = from_i;
+			rook_moves_list[valid_move_counter]->to_j = from_j + i;
+			rook_moves_list[valid_move_counter]->promotion = ' ';
+			rook_moves_list[valid_move_counter]->hostage = ' ';
+			valid_move_counter++;
+			break;
+		}
+		// if it is a same color piece
+		else
+		{
+			break;
+		}
+	}
+
+	// Down
+	for (int i = 1; i <= down; i++)
+	{
+		// if it is a space
+		if (checkForPiece((*board)[from_i - i][from_j]) == 1)
+		{
+			rook_moves_list[valid_move_counter] = malloc(sizeof(move_t));
+			rook_moves_list[valid_move_counter]->from_i = from_i;
+			rook_moves_list[valid_move_counter]->from_j = from_j;
+			rook_moves_list[valid_move_counter]->to_i = from_i - i;
+			rook_moves_list[valid_move_counter]->to_j = from_j;
+			rook_moves_list[valid_move_counter]->promotion = ' ';
+			rook_moves_list[valid_move_counter]->hostage = ' ';
+			valid_move_counter++;
+		}
+		// if it is a killable piece
+		else if ((colour == 0 && islower((*board)[from_i - i][from_j])) || (colour == 1 && isupper((*board)[from_i - i][from_j])))
+		{
+			rook_moves_list[valid_move_counter] = malloc(sizeof(move_t));
+			rook_moves_list[valid_move_counter]->from_i = from_i;
+			rook_moves_list[valid_move_counter]->from_j = from_j;
+			rook_moves_list[valid_move_counter]->to_i = from_i - i;
+			rook_moves_list[valid_move_counter]->to_j = from_j;
+			rook_moves_list[valid_move_counter]->promotion = ' ';
+			rook_moves_list[valid_move_counter]->hostage = ' ';
+			valid_move_counter++;
+			break;
+		}
+		// if it is a same color piece
+		else
+		{
+			break;
+		}
+	}
+
+	// Left
+	for (int i = 1; i <= left; i++)
+	{
+		// if it is a space
+		if (checkForPiece((*board)[from_i][from_j - i]) == 1)
+		{
+			rook_moves_list[valid_move_counter] = malloc(sizeof(move_t));
+			rook_moves_list[valid_move_counter]->from_i = from_i;
+			rook_moves_list[valid_move_counter]->from_j = from_j;
+			rook_moves_list[valid_move_counter]->to_i = from_i;
+			rook_moves_list[valid_move_counter]->to_j = from_j - i;
+			rook_moves_list[valid_move_counter]->promotion = ' ';
+			rook_moves_list[valid_move_counter]->hostage = ' ';
+			valid_move_counter++;
+		}
+		// if it is a killable piece
+		else if ((colour == 0 && islower((*board)[from_i][from_j - i])) || (colour == 1 && isupper((*board)[from_i][from_j - i])))
+		{
+			rook_moves_list[valid_move_counter] = malloc(sizeof(move_t));
+			rook_moves_list[valid_move_counter]->from_i = from_i;
+			rook_moves_list[valid_move_counter]->from_j = from_j;
+			rook_moves_list[valid_move_counter]->to_i = from_i;
+			rook_moves_list[valid_move_counter]->to_j = from_j - i;
+			rook_moves_list[valid_move_counter]->promotion = ' ';
+			rook_moves_list[valid_move_counter]->hostage = ' ';
+			valid_move_counter++;
+			break;
+		}
+		// if it is a same color piece
+		else
+		{
+			break;
+		}
+	}
+	rook_moves_list[valid_move_counter] = NULL;
+	rook_moves_list = realloc(rook_moves_list, (valid_move_counter + 1) * sizeof(move_t *));
+	return rook_moves_list;
 }
