@@ -31,6 +31,23 @@ int min(int a, int b)
 	}
 }
 
+// Fill struct
+move_t *fillMove(int from_i, int from_j, int to_i, int to_j, char promotion, char hostage)
+{
+	move_t *move = malloc(sizeof(move_t));
+	if (!move)
+	{
+		return NULL;
+	}
+	move->from_i = from_i;
+	move->from_j = from_j;
+	move->to_i = to_i;
+	move->to_j = to_j;
+	move->promotion = promotion;
+	move->hostage = hostage;
+	return move;
+}
+
 exboard_t *newboard()
 {
 	exboard_t *board = malloc(sizeof(exboard_t));
@@ -510,13 +527,7 @@ move_t **king_moves(board_t *board, int from_i, int from_j, int colour)
 			char target_piece = (*board)[possible_moves[i][0]][possible_moves[i][1]];
 			if (checkForPiece(target_piece) == 1 || (colour == 0 && islower(target_piece)) || (colour == 1 && isupper(target_piece)))
 			{
-				king_moves_list[valid_move_counter] = malloc(sizeof(move_t));
-				king_moves_list[valid_move_counter]->from_i = from_i;
-				king_moves_list[valid_move_counter]->from_j = from_j;
-				king_moves_list[valid_move_counter]->to_i = possible_moves[i][0];
-				king_moves_list[valid_move_counter]->to_j = possible_moves[i][1];
-				king_moves_list[valid_move_counter]->promotion = ' ';
-				king_moves_list[valid_move_counter]->hostage = ' ';
+				king_moves_list[valid_move_counter] = fillMove(from_i, from_j, possible_moves[i][0], possible_moves[i][1], ' ', ' ');
 				valid_move_counter++;
 			}
 		}
