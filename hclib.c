@@ -300,7 +300,7 @@ exboard_t *apply_move(exboard_t *board, move_t *move)
 
 	// En Passant
 	// Make sure there is a piece behind it
-	if ((new_board->board[move->from_i][move->from_j] == 'P' || new_board->board[move->from_i][move->from_j] == 'p') && (abs(move->to_i - move->from_i) == 1 && abs(move->to_j - move->from_j) == 1))
+	if ((new_board->board[move->from_i][move->from_j] == 'P' || new_board->board[move->from_i][move->from_j] == 'p') && (abs(move->to_i - move->from_i) == 1 && abs(move->to_j - move->from_j) == 1) && checkForPiece(new_board->board[move->to_i][move->to_j]) == 1)
 	{
 		// Send white piece to bprision
 		if (isupper(new_board->board[move->from_i][move->to_j]))
