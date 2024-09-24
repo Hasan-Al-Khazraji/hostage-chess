@@ -567,13 +567,7 @@ move_t **knightmoves(board_t *board, int from_i, int from_j, int colour)
 			char target_piece = (*board)[possible_moves[i][0]][possible_moves[i][1]];
 			if (checkForPiece(target_piece) == 1 || (colour == 0 && islower(target_piece)) || (colour == 1 && isupper(target_piece)))
 			{
-				knight_moves_list[valid_move_counter] = malloc(sizeof(move_t));
-				knight_moves_list[valid_move_counter]->from_i = from_i;
-				knight_moves_list[valid_move_counter]->from_j = from_j;
-				knight_moves_list[valid_move_counter]->to_i = possible_moves[i][0];
-				knight_moves_list[valid_move_counter]->to_j = possible_moves[i][1];
-				knight_moves_list[valid_move_counter]->promotion = ' ';
-				knight_moves_list[valid_move_counter]->hostage = ' ';
+				knight_moves_list[valid_move_counter] = fillMove(from_i, from_j, possible_moves[i][0], possible_moves[i][1], ' ', ' ');
 				valid_move_counter++;
 			}
 		}
