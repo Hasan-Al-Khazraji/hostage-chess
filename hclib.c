@@ -599,7 +599,7 @@ move_t **bishopmoves(board_t *board, int from_i, int from_j, int colour)
 	for (int i = 1; i <= topLeft; i++)
 	{
 		// if it is a space
-		if (checkForPiece((*board)[from_i + i][from_j - i]) == 1)
+		if (checkForPiece((*board)[from_i + i][from_j - i]) == 1 && from_i + i < 8 && from_j - i >= 0)
 		{
 			bishop_moves_list[valid_move_counter] = malloc(sizeof(move_t));
 			bishop_moves_list[valid_move_counter]->from_i = from_i;
@@ -634,7 +634,7 @@ move_t **bishopmoves(board_t *board, int from_i, int from_j, int colour)
 	for (int i = 1; i <= topRight; i++)
 	{
 		// if it is a space
-		if (checkForPiece((*board)[from_i + i][from_j + i]) == 1)
+		if (checkForPiece((*board)[from_i + i][from_j + i]) == 1 && from_i + i < 8 && from_j + i < 8)
 		{
 			bishop_moves_list[valid_move_counter] = malloc(sizeof(move_t));
 			bishop_moves_list[valid_move_counter]->from_i = from_i;
@@ -669,7 +669,7 @@ move_t **bishopmoves(board_t *board, int from_i, int from_j, int colour)
 	for (int i = 1; i <= bottomLeft; i++)
 	{
 		// if it is a space
-		if (checkForPiece((*board)[from_i - i][from_j - i]) == 1)
+		if (checkForPiece((*board)[from_i - i][from_j - i]) == 1 && from_i - i >= 0 && from_j - i >= 0)
 		{
 			bishop_moves_list[valid_move_counter] = malloc(sizeof(move_t));
 			bishop_moves_list[valid_move_counter]->from_i = from_i;
@@ -704,7 +704,7 @@ move_t **bishopmoves(board_t *board, int from_i, int from_j, int colour)
 	for (int i = 1; i <= bottomRight; i++)
 	{
 		// if it is a space
-		if (checkForPiece((*board)[from_i - i][from_j + i]) == 1)
+		if (checkForPiece((*board)[from_i - i][from_j + i]) == 1 && from_i - i >= 0 && from_j + i < 8)
 		{
 			bishop_moves_list[valid_move_counter] = malloc(sizeof(move_t));
 			bishop_moves_list[valid_move_counter]->from_i = from_i;
@@ -762,25 +762,13 @@ move_t **rookmoves(board_t *board, int from_i, int from_j, int colour)
 		// if it is a space
 		if (checkForPiece((*board)[from_i + i][from_j]) == 1)
 		{
-			rook_moves_list[valid_move_counter] = malloc(sizeof(move_t));
-			rook_moves_list[valid_move_counter]->from_i = from_i;
-			rook_moves_list[valid_move_counter]->from_j = from_j;
-			rook_moves_list[valid_move_counter]->to_i = from_i + i;
-			rook_moves_list[valid_move_counter]->to_j = from_j;
-			rook_moves_list[valid_move_counter]->promotion = ' ';
-			rook_moves_list[valid_move_counter]->hostage = ' ';
+			rook_moves_list[valid_move_counter] = fillMove(from_i, from_j, from_i + i, from_j, ' ', ' ');
 			valid_move_counter++;
 		}
 		// if it is a killable piece
 		else if ((colour == 0 && islower((*board)[from_i + i][from_j])) || (colour == 1 && isupper((*board)[from_i + i][from_j])))
 		{
-			rook_moves_list[valid_move_counter] = malloc(sizeof(move_t));
-			rook_moves_list[valid_move_counter]->from_i = from_i;
-			rook_moves_list[valid_move_counter]->from_j = from_j;
-			rook_moves_list[valid_move_counter]->to_i = from_i + i;
-			rook_moves_list[valid_move_counter]->to_j = from_j;
-			rook_moves_list[valid_move_counter]->promotion = ' ';
-			rook_moves_list[valid_move_counter]->hostage = ' ';
+			rook_moves_list[valid_move_counter] = fillMove(from_i, from_j, from_i + i, from_j, ' ', ' ');
 			valid_move_counter++;
 			break;
 		}
@@ -797,25 +785,13 @@ move_t **rookmoves(board_t *board, int from_i, int from_j, int colour)
 		// if it is a space
 		if (checkForPiece((*board)[from_i][from_j + i]) == 1)
 		{
-			rook_moves_list[valid_move_counter] = malloc(sizeof(move_t));
-			rook_moves_list[valid_move_counter]->from_i = from_i;
-			rook_moves_list[valid_move_counter]->from_j = from_j;
-			rook_moves_list[valid_move_counter]->to_i = from_i;
-			rook_moves_list[valid_move_counter]->to_j = from_j + i;
-			rook_moves_list[valid_move_counter]->promotion = ' ';
-			rook_moves_list[valid_move_counter]->hostage = ' ';
+			rook_moves_list[valid_move_counter] = fillMove(from_i, from_j, from_i, from_j + i, ' ', ' ');
 			valid_move_counter++;
 		}
 		// if it is a killable piece
 		else if ((colour == 0 && islower((*board)[from_i][from_j + i])) || (colour == 1 && isupper((*board)[from_i][from_j + i])))
 		{
-			rook_moves_list[valid_move_counter] = malloc(sizeof(move_t));
-			rook_moves_list[valid_move_counter]->from_i = from_i;
-			rook_moves_list[valid_move_counter]->from_j = from_j;
-			rook_moves_list[valid_move_counter]->to_i = from_i;
-			rook_moves_list[valid_move_counter]->to_j = from_j + i;
-			rook_moves_list[valid_move_counter]->promotion = ' ';
-			rook_moves_list[valid_move_counter]->hostage = ' ';
+			rook_moves_list[valid_move_counter] = fillMove(from_i, from_j, from_i, from_j + i, ' ', ' ');
 			valid_move_counter++;
 			break;
 		}
@@ -832,25 +808,13 @@ move_t **rookmoves(board_t *board, int from_i, int from_j, int colour)
 		// if it is a space
 		if (checkForPiece((*board)[from_i - i][from_j]) == 1)
 		{
-			rook_moves_list[valid_move_counter] = malloc(sizeof(move_t));
-			rook_moves_list[valid_move_counter]->from_i = from_i;
-			rook_moves_list[valid_move_counter]->from_j = from_j;
-			rook_moves_list[valid_move_counter]->to_i = from_i - i;
-			rook_moves_list[valid_move_counter]->to_j = from_j;
-			rook_moves_list[valid_move_counter]->promotion = ' ';
-			rook_moves_list[valid_move_counter]->hostage = ' ';
+			rook_moves_list[valid_move_counter] = fillMove(from_i, from_j, from_i - i, from_j, ' ', ' ');
 			valid_move_counter++;
 		}
 		// if it is a killable piece
 		else if ((colour == 0 && islower((*board)[from_i - i][from_j])) || (colour == 1 && isupper((*board)[from_i - i][from_j])))
 		{
-			rook_moves_list[valid_move_counter] = malloc(sizeof(move_t));
-			rook_moves_list[valid_move_counter]->from_i = from_i;
-			rook_moves_list[valid_move_counter]->from_j = from_j;
-			rook_moves_list[valid_move_counter]->to_i = from_i - i;
-			rook_moves_list[valid_move_counter]->to_j = from_j;
-			rook_moves_list[valid_move_counter]->promotion = ' ';
-			rook_moves_list[valid_move_counter]->hostage = ' ';
+			rook_moves_list[valid_move_counter] = fillMove(from_i, from_j, from_i - i, from_j, ' ', ' ');
 			valid_move_counter++;
 			break;
 		}
@@ -867,25 +831,13 @@ move_t **rookmoves(board_t *board, int from_i, int from_j, int colour)
 		// if it is a space
 		if (checkForPiece((*board)[from_i][from_j - i]) == 1)
 		{
-			rook_moves_list[valid_move_counter] = malloc(sizeof(move_t));
-			rook_moves_list[valid_move_counter]->from_i = from_i;
-			rook_moves_list[valid_move_counter]->from_j = from_j;
-			rook_moves_list[valid_move_counter]->to_i = from_i;
-			rook_moves_list[valid_move_counter]->to_j = from_j - i;
-			rook_moves_list[valid_move_counter]->promotion = ' ';
-			rook_moves_list[valid_move_counter]->hostage = ' ';
+			rook_moves_list[valid_move_counter] = fillMove(from_i, from_j, from_i, from_j - i, ' ', ' ');
 			valid_move_counter++;
 		}
 		// if it is a killable piece
 		else if ((colour == 0 && islower((*board)[from_i][from_j - i])) || (colour == 1 && isupper((*board)[from_i][from_j - i])))
 		{
-			rook_moves_list[valid_move_counter] = malloc(sizeof(move_t));
-			rook_moves_list[valid_move_counter]->from_i = from_i;
-			rook_moves_list[valid_move_counter]->from_j = from_j;
-			rook_moves_list[valid_move_counter]->to_i = from_i;
-			rook_moves_list[valid_move_counter]->to_j = from_j - i;
-			rook_moves_list[valid_move_counter]->promotion = ' ';
-			rook_moves_list[valid_move_counter]->hostage = ' ';
+			rook_moves_list[valid_move_counter] = fillMove(from_i, from_j, from_i, from_j - i, ' ', ' ');
 			valid_move_counter++;
 			break;
 		}
@@ -929,7 +881,7 @@ move_t **queenmoves(board_t *board, int from_i, int from_j, int colour)
 
 move_t **pawn_moves(board_t *board, int from_i, int from_j, int colour)
 {
-	move_t **pawn_moves_list = malloc(4 * sizeof(move_t *));
+	move_t **pawn_moves_list = malloc(5 * sizeof(move_t *));
 	if (!pawn_moves_list)
 	{
 		return NULL;
