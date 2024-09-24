@@ -418,6 +418,7 @@ move_t **moves(board_t *board, int from_i, int from_j)
 	{
 	case 'p':
 		// pawn_moves
+		return pawn_moves(board, from_i, from_j, 1);
 		// return the value from this function
 		break;
 	case 'r':
@@ -447,6 +448,7 @@ move_t **moves(board_t *board, int from_i, int from_j)
 		break;
 	case 'P':
 		// pawn_moves
+		return pawn_moves(board, from_i, from_j, 0);
 		// return the value from this function
 		break;
 	case 'R':
@@ -918,4 +920,78 @@ move_t **queenmoves(board_t *board, int from_i, int from_j, int colour)
 	free(diagonal_moves);
 	queen_moves_list = realloc(queen_moves_list, (i + 1) * sizeof(move_t *));
 	return queen_moves_list;
+}
+
+move_t **pawn_moves(board_t *board, int from_i, int from_j, int colour)
+{
+	move_t **pawn_moves_list = malloc(4 * sizeof(move_t *));
+	if (!pawn_moves_list)
+	{
+		return NULL;
+	}
+
+	// Colour 0 is white, Colour 1 is black
+	// White is positive direction, Black is negative direction
+
+	int colourValidator = colour == 0 ? 1 : -1;
+	int valid_move_counter = 0;
+
+	// Check if spot ahead is empty
+	// Check also if i + 1 is within bounds OR i - 1 is within bounds
+	if (checkForPiece((*board)[from_i + colourValidator][from_j]) == 1 && from_i + colourValidator < 8 && from_i + colourValidator >= 0)
+	{
+		pawn_moves_list[valid_move_counter] = malloc(sizeof(move_t));
+		pawn_moves_list[valid_move_counter]->from_i = from_i;
+		pawn_moves_list[valid_move_counter]->from_j = from_j;
+		pawn_moves_list[valid_move_counter]->to_i = from_i + colourValidator;
+		pawn_moves_list[valid_move_counter]->to_j = from_j;
+		pawn_moves_list[valid_move_counter]->promotion = ' ';
+		pawn_moves_list[valid_move_counter]->hostage = ' ';
+		valid_move_counter++;
+	}
+	// Check if there is a piece right diagnoally
+	if (checkForPiece((*board)[from_i + colourValidator][from_j + 1]) == 0 && ((colour == 0 && islower((*board)[from_i + colourValidator][from_j + 1])) || (colour == 1 && isupper((*board)[from_i + colourValidator][from_j + 1]))) && from_i + colourValidator < 8 && from_i + colourValidator >= 0 && from_j + 1 < 8 && from_j + 1 >= 0)
+	{
+		pawn_moves_list[valid_move_counter] = malloc(sizeof(move_t));
+		pawn_moves_list[valid_move_counter]->from_i = from_i;
+		pawn_moves_list[valid_move_counter]->from_j = from_j;
+		pawn_moves_list[valid_move_counter]->to_i = from_i + colourValidator;
+		pawn_moves_list[valid_move_counter]->to_j = from_j + 1;
+		pawn_moves_list[valid_move_counter]->promotion = ' ';
+		pawn_moves_list[valid_move_counter]->hostage = (*board)[from_i + colourValidator][from_j + 1];
+		valid_move_counter++;
+	}
+	// Check if there is a piece left diagnoally
+	if (checkForPiece((*board)[from_i + colourValidator][from_j - 1]) == 0 && ((colour == 0 && islower((*board)[from_i + colourValidator][from_j - 1])) || (colour == 1 && isupper((*board)[from_i + colourValidator][from_j - 1]))) && from_i + colourValidator < 8 && from_i + colourValidator >= 0 && from_j - 1 < 8 && from_j - 1 >= 0)
+	{
+		pawn_moves_list[valid_move_counter] = malloc(sizeof(move_t));
+		pawn_moves_list[valid_move_counter]->from_i = from_i;
+		pawn_moves_list[valid_move_counter]->from_j = from_j;
+		pawn_moves_list[valid_move_counter]->to_i = from_i + colourValidator;
+		pawn_moves_list[valid_move_counter]->to_j = from_j - 1;
+		pawn_moves_list[valid_move_counter]->promotion = ' ';
+		pawn_moves_list[valid_move_counter]->hostage = (*board)[from_i + colourValidator][from_j - 1];
+		valid_move_counter++;
+	}
+	// Check if it is the first move
+	if ((colour == 0 && from_i == 1) || (colour == 1 && from_i == 6))
+	{
+		// Check if 2 spots ahead is empty
+		// Check also if i + 1 is within bounds OR i - 1 is within bounds
+		if (checkForPiece((*board)[from_i + 2 * colourValidator][from_j]) == 1 && from_i + 2 * colourValidator < 8 && from_i + 2 * colourValidator >= 0)
+		{
+			pawn_moves_list[valid_move_counter] = malloc(sizeof(move_t));
+			pawn_moves_list[valid_move_counter]->from_i = from_i;
+			pawn_moves_list[valid_move_counter]->from_j = from_j;
+			pawn_moves_list[valid_move_counter]->to_i = from_i + 2 * colourValidator;
+			pawn_moves_list[valid_move_counter]->to_j = from_j;
+			pawn_moves_list[valid_move_counter]->promotion = ' ';
+			pawn_moves_list[valid_move_counter]->hostage = ' ';
+			valid_move_counter++;
+		}
+	}
+
+	pawn_moves_list[valid_move_counter] = NULL;
+	pawn_moves_list = realloc(pawn_moves_list, (valid_move_counter + 1) * sizeof(move_t *));
+	return pawn_moves_list;
 }
