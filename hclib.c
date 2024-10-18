@@ -19,9 +19,9 @@ int checkForPiece(char piece)
 	return 1; // Character is not found
 }
 
-int min(int a, int b)
+int max(int a, int b)
 {
-	if (a < b)
+	if (a > b)
 	{
 		return a;
 	}
@@ -588,10 +588,10 @@ move_t **bishopmoves(board_t *board, int from_i, int from_j, int colour)
 	}
 
 	// Optimal approach from https://www.geeksforgeeks.org/all-possible-points-where-bishops-can-reach-in-one-move/
-	int topLeft = min(from_i, from_j);
-	int topRight = min(from_i, 7 - from_j);
-	int bottomLeft = min(7 - from_i, from_j);
-	int bottomRight = min(7 - from_i, 7 - from_j);
+	int topLeft = max(from_i, from_j);
+	int topRight = max(from_i, 7 - from_j);
+	int bottomLeft = max(7 - from_i, from_j);
+	int bottomRight = max(7 - from_i, 7 - from_j);
 
 	int valid_move_counter = 0;
 
@@ -611,7 +611,7 @@ move_t **bishopmoves(board_t *board, int from_i, int from_j, int colour)
 			valid_move_counter++;
 		}
 		// if it is a killable piece
-		else if ((colour == 0 && islower((*board)[from_i + i][from_j - i])) || (colour == 1 && isupper((*board)[from_i + i][from_j - i])))
+		else if (((colour == 0 && islower((*board)[from_i + i][from_j - i])) || (colour == 1 && isupper((*board)[from_i + i][from_j - i]))) && from_i + i < 8 && from_j - i >= 0)
 		{
 			bishop_moves_list[valid_move_counter] = malloc(sizeof(move_t));
 			bishop_moves_list[valid_move_counter]->from_i = from_i;
@@ -646,7 +646,7 @@ move_t **bishopmoves(board_t *board, int from_i, int from_j, int colour)
 			valid_move_counter++;
 		}
 		// if it is a killable piece
-		else if ((colour == 0 && islower((*board)[from_i + i][from_j + i])) || (colour == 1 && isupper((*board)[from_i + i][from_j + i])))
+		else if (((colour == 0 && islower((*board)[from_i + i][from_j + i])) || (colour == 1 && isupper((*board)[from_i + i][from_j + i]))) && from_i + i < 8 && from_j + i < 8)
 		{
 			bishop_moves_list[valid_move_counter] = malloc(sizeof(move_t));
 			bishop_moves_list[valid_move_counter]->from_i = from_i;
@@ -681,7 +681,7 @@ move_t **bishopmoves(board_t *board, int from_i, int from_j, int colour)
 			valid_move_counter++;
 		}
 		// if it is a killable piece
-		else if ((colour == 0 && islower((*board)[from_i - i][from_j - i])) || (colour == 1 && isupper((*board)[from_i - i][from_j - i])))
+		else if (((colour == 0 && islower((*board)[from_i - i][from_j - i])) || (colour == 1 && isupper((*board)[from_i - i][from_j - i]))) && from_i - i >= 0 && from_j - i >= 0)
 		{
 			bishop_moves_list[valid_move_counter] = malloc(sizeof(move_t));
 			bishop_moves_list[valid_move_counter]->from_i = from_i;
@@ -716,7 +716,7 @@ move_t **bishopmoves(board_t *board, int from_i, int from_j, int colour)
 			valid_move_counter++;
 		}
 		// if it is a killable piece
-		else if ((colour == 0 && islower((*board)[from_i - i][from_j + i])) || (colour == 1 && isupper((*board)[from_i - i][from_j + i])))
+		else if (((colour == 0 && islower((*board)[from_i - i][from_j + i])) || (colour == 1 && isupper((*board)[from_i - i][from_j + i]))) && from_i - i >= 0 && from_j + i < 8)
 		{
 			bishop_moves_list[valid_move_counter] = malloc(sizeof(move_t));
 			bishop_moves_list[valid_move_counter]->from_i = from_i;
