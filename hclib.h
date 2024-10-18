@@ -32,5 +32,7 @@ move_t **bishopmoves(board_t *board, int from_i, int from_j, int colour);
 move_t **rookmoves(board_t *board, int from_i, int from_j, int colour);
 move_t **queenmoves(board_t *board, int from_i, int from_j, int colour);
 move_t **pawn_moves(board_t *board, int from_i, int from_j, int colour);
+char *fen(exboard_t *board, char *active, char *castling, char *enpassant, int half, int full);
+exboard_t *boardstring(char *string);
 
 #endif

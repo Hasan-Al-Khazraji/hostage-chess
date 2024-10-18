@@ -233,6 +233,98 @@ char *stringboard(exboard_t *board)
 	return stringfied_board;
 }
 
+exboard_t *boardstring(char *string)
+{
+	exboard_t *board = malloc(sizeof(exboard_t));
+	if (!board)
+	{
+		return NULL;
+	}
+
+	// Fill bprison
+	int i = 0;
+	int secondLine = 0;
+	for (; i < 17 && string[i] != ' '; i++)
+	{
+		if(string[i] == '\0')
+		{
+			secondLine = 1;
+			continue;
+		}
+		else
+		{
+			board->bprison[i + secondLine] = string[i];
+		}
+	}
+	board->bprison[i + secondLine] = '\0';
+
+	// Fill bairfield
+	i = 18;
+	secondLine = 0;
+	for (; i < 35 && string[i] != ' '; i++)
+	{
+		if(string[i] == '\0')
+		{
+			secondLine = 1;
+			continue;
+		}
+		else
+		{
+			board->bairfield[i - 18 + secondLine] = string[i];
+		}
+	}
+	board->bairfield[i - 18 + secondLine] = '\0';
+
+	// Fill wprison
+	i = 126;
+	secondLine = 0;
+	for (; i < 143 && string[i] != ' '; i++)
+	{
+		if(string[i] == '\0')
+		{
+			secondLine = 1;
+			continue;
+		}
+		else
+		{
+			board->wprison[i - 126 + secondLine] = string[i];
+		}
+	}
+	board->wprison[i - 126 + secondLine] = '\0';
+
+	// Fill wairfield
+	i = 144;
+	secondLine = 0;
+	for (; i < 161 && string[i] != ' '; i++)
+	{
+		if(string[i] == '\0')
+		{
+			secondLine = 1;
+			continue;
+		}
+		else
+		{
+			board->wairfield[i - 144 + secondLine] = string[i];
+		}
+	}
+	board->wairfield[i - 144 + secondLine] = '\0';
+
+	// Fill the board
+	for (int i = 0; i < 8; i++)
+	{
+		board->board[7][i] = string[i + 45];
+		board->board[6][i] = string[i + 54];
+		board->board[5][i] = string[i + 63];
+		board->board[4][i] = string[i + 72];
+		board->board[3][i] = string[i + 81];
+		board->board[2][i] = string[i + 90];
+		board->board[1][i] = string[i + 99];
+		board->board[0][i] = string[i + 108];
+	}
+
+	return board;
+}
+
 exboard_t *apply_move(exboard_t *board, move_t *move)
 {
 	exboard_t *new_board = copyboard(board);
