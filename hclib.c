@@ -325,6 +325,89 @@ exboard_t *boardstring(char *string)
 	return board;
 }
 
+// Idea from https://www.reddit.com/r/chess/comments/12hby32/how_fen_chess_position_notation_works/
+char *fen(exboard_t *board, char *active, char *castling, char *enpassant, int half, int full)
+{
+	// I think its 84 max, but 90 just in case
+	char *fen_string = malloc(90 * sizeof(char));
+	if (!fen_string)
+	{
+		return NULL;
+	}
+
+	int stringIndex = 0;
+	for (int row = 7; row >= 0; row--)
+	{
+		int spaceCount = 0;
+		for (int col = 0; col < 8; col++)
+		{
+			// If space, increment space counter
+			if (board->board[row][col] == ' ')
+			{
+				spaceCount++;
+			}
+			else // Letter
+			{
+				// Append the spaceCount if it exists
+				if (spaceCount > 0)
+				{
+					fen_string[stringIndex] = '0' + spaceCount;
+					stringIndex++;
+					spaceCount = 0;
+				}
+				fen_string[stringIndex] = board->board[row][col]; // The letter part of it
+				stringIndex++;
+			}
+		}
+
+		// After we finish with the board, check if one last spaceCount exists
+		if (spaceCount > 0)
+		{
+			fen_string[stringIndex] = '0' + spaceCount;
+			stringIndex++;
+		}
+		// If we're done with rows, DO NOT ADD a /, else do
+		if (row > 0)
+		{
+			fen_string[stringIndex] = '/';
+			stringIndex++;
+		}
+	}
+
+	fen_string[stringIndex] = ' ';
+	stringIndex++;
+	// Add to fen_string the active letter
+	strcpy(&fen_string[stringIndex], active);
+	stringIndex += strlen(active); // In case its longer than a letter
+
+	fen_string[stringIndex] = ' ';
+	stringIndex++;
+	// Add to fen_string the castle
+	strcpy(&fen_string[stringIndex], castling);
+	stringIndex += strlen(castling);
+
+	fen_string[stringIndex] = ' ';
+	stringIndex++;
+	// Add to fen_string the enpassant
+	// Does not work when you pass in x#: fen_string[stringIndex] = *enpassant;
+	strcpy(&fen_string[stringIndex], enpassant);
+	stringIndex += strlen(enpassant);
+
+	fen_string[stringIndex] = ' ';
+	stringIndex++;
+	stringIndex += sprintf(&fen_string[stringIndex], "%d", half);
+	
+	fen_string[stringIndex] = ' ';
+	stringIndex++;
+	stringIndex += sprintf(&fen_string[stringIndex], "%d", full);
+	fen_string[stringIndex] = '\0';
+
+	// Correct string size
+	fen_string = realloc(fen_string, strlen(fen_string) + 1);
+
+	return fen_string;
+}
+
 exboard_t *apply_move(exboard_t *board, move_t *move)
 {
 	exboard_t *new_board = copyboard(board);
