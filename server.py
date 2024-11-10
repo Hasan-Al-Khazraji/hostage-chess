@@ -45,6 +45,56 @@ class MyHandler( BaseHTTPRequestHandler ):
 
             # send it to the broswer
             self.wfile.write( bytes( content, "utf-8" ) );
+        
+        ### PART 1
+        
+        # serve index.html
+        elif parsed.path in [ '/index.html' ]:
+
+            # retreive the HTML file
+            fp = open( '.'+self.path );
+            content = fp.read();
+
+            # generate the headers
+            self.send_response( 200 ); # OK
+            self.send_header( "Content-type", "text/html" );
+            self.send_header( "Content-length", len( content ) );
+            self.end_headers();
+
+            # send it to the broswer
+            self.wfile.write( bytes( content, "utf-8" ) );
+        
+        # serve chessboard.css
+        elif parsed.path in [ '/css/chessboard-1.0.0.css' ]:
+
+            # retreive the HTML file
+            fp = open( '.'+self.path );
+            content = fp.read();
+
+            # generate the headers
+            self.send_response( 200 ); # OK
+            self.send_header( "Content-type", "text/html" );
+            self.send_header( "Content-length", len( content ) );
+            self.end_headers();
+
+            # send it to the broswer
+            self.wfile.write( bytes( content, "utf-8" ) );
+        
+        # serve chessboard.js
+        elif parsed.path in [ '/js/chessboard-1.0.0.js' ]:
+
+            # retreive the HTML file
+            fp = open( '.'+self.path );
+            content = fp.read();
+
+            # generate the headers
+            self.send_response( 200 ); # OK
+            self.send_header( "Content-type", "text/html" );
+            self.send_header( "Content-length", len( content ) );
+            self.end_headers();
+
+            # send it to the broswer
+            self.wfile.write( bytes( content, "utf-8" ) );
 
         # serve upload.html
         elif parsed.path in [ '/upload.html' ]:
