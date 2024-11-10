@@ -190,8 +190,9 @@
     return validSquare(squares[0]) && validSquare(squares[1])
   }
 
+  // https://regexr.com/ used for testing
   function validSquare (square) {
-    return isString(square) && square.search(/^[a-h][1-8]$/) !== -1
+    return isString(square) && square.search(/^[a-h](-?[1-3]|[0-9]|1[0-2])$/) !== -1
   }
 
   if (RUN_ASSERTS) {
@@ -776,7 +777,7 @@
     function createElIds () {
       // squares on the board
       for (var i = 0; i < COLUMNS.length; i++) {
-        for (var j = 1; j <= 8; j++) {
+        for (var j = -3; j <= 12; j++) {
           var square = COLUMNS[i] + j
           squareElsIds[square] = square + '-' + uuid()
         }
@@ -805,14 +806,14 @@
 
       // algebraic notation / orientation
       var alpha = deepCopy(COLUMNS)
-      var row = 8
+      var row = 12
       if (orientation === 'black') {
         alpha.reverse()
-        row = 1
+        row = 1 // Should this be -3?
       }
 
       var squareColor = 'white'
-      for (var i = 0; i < 8; i++) {
+      for (var i = -3; i <= 12; i++) {
         html += '<div class="{row}">'
         for (var j = 0; j < 8; j++) {
           var square = alpha[j] + row
@@ -831,7 +832,7 @@
             }
 
             // numeric notation
-            if (j === 0) {
+            if (j === 0 && (row <= 8 && row >= 1)) {
               html += '<div class="{notation} {numeric}">' + row + '</div>'
             }
           }
