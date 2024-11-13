@@ -210,6 +210,99 @@ class MyHandler( BaseHTTPRequestHandler ):
 
             # send it to the browser
             self.wfile.write( bytes( content, "utf-8" ) );
+            
+        elif parsed.path in [ '/board.html' ]:
+            # get the form data
+            form = cgi.FieldStorage( fp=self.rfile,
+                                     headers=self.headers,
+                                     environ = { 'REQUEST_METHOD': 'POST',
+                                                 'CONTENT_TYPE': 
+                                                   self.headers['Content-Type'],
+                                               } 
+                                   );
+        
+            # read file and convert to FEN
+            theBoard = form['stringboard.txt'].file.read().decode("utf-8");
+            theNewBoard = hclib.boardstring(theBoard);
+            fen_string = hclib.fen(theNewBoard, 'w', 'KQkq', '-', 0, 1);
+            
+            # get turn
+            turn = form.getvalue('turn')
+            nextturn = 'b' if turn == 'w' else 'w'
+            wtime = int(form.getvalue('wtime'))
+            btime = int(form.getvalue('btime'))
+            
+            # read the HTML file and insert the form data
+            content = f"""
+            <!doctype html>
+            <html>
+            <head>
+                <title>Hostage Chess</title>
+                <link rel="stylesheet" href="css/chessboard-1.0.0.css">
+            </head>
+            <body>
+                <!--- Begin Example HTML ------------------------------------------------------>
+                <div id="myBoard" style="width: 400px"></div>
+                <div>
+                    White: <a id='wMins'>{wtime // 60}</a>:<a id='wSecs'>{("0" + str(wtime % 60))[-2:]}</a>
+                    <form action="/board.html" method="post" enctype="multipart/form-data">
+                    
+                        <input type="hidden" id="board" name="stringboard.txt">
+                        
+                        <input type="hidden" id="turn" name="turn" value={nextturn}>
+                        
+                        <input type="hidden" id="wtime" name="wtime" value={wtime}>
+                        
+                        <input type="hidden" id="btime" name="btime" value={btime}>
+                        
+                        <input type="submit" value="Done">
+                    </form>
+                    <a id='bMins'>{btime // 60}</a>:<a id='bSecs'>{("0" + str(btime % 60))[-2:]}</a> :Black
+                </div>
+                <!--- End Example HTML -------------------------------------------------------->
+                <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+                <script src="js/chessboard-1.0.0.js"></script>
+                <script>
+                    let turn = "{turn}";
+                    let wtime = {wtime};
+                    let btime = {btime};
+                    
+                    setInterval(() => {{
+                        if (turn === 'w' && wtime > 0){{
+                            wtime--;
+                            // Set minutes
+                            document.getElementById('wMins').innerHTML = Math.floor(wtime / 60);
+                            // Set seconds
+                            document.getElementById('wSecs').innerHTML = ("0" + (wtime % 60).toString()).slice(-2)
+                        }}
+                        else if (turn === 'b' && btime > 0) {{
+                            btime--;
+                            // Set minutes
+                            document.getElementById('bMins').innerHTML = Math.floor(btime / 60);
+                            // Set seconds
+                            document.getElementById('bSecs').innerHTML = ("0" + (btime % 60).toString()).slice(-2)
+                        }}
+                    }}, 1000)
+                
+                    var config = {{
+                        draggable: true,
+                        dropOffBoard: 'snapback', // this is the default
+                        position: '{fen_string}'
+                    }}
+                    var board = Chessboard('myBoard', config)
+                </script>
+            </body>
+            </html>
+            """
+
+            # generate the headers
+            self.send_response( 200 ); # OK
+            self.send_header( "Content-type", "text/html" );
+            self.send_header( "Content-length", len( content ) );
+            self.end_headers();
+
+            # send it to the browser
+            self.wfile.write( bytes( content, "utf-8" ) );
 
         else:
             # generate 404 for POST requests that aren't the file above
