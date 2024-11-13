@@ -73,7 +73,7 @@ class MyHandler( BaseHTTPRequestHandler ):
 
             # generate the headers
             self.send_response( 200 ); # OK
-            self.send_header( "Content-type", "text/html" );
+            self.send_header( "Content-type", "text/css" );
             self.send_header( "Content-length", len( content ) );
             self.end_headers();
 
@@ -89,7 +89,7 @@ class MyHandler( BaseHTTPRequestHandler ):
 
             # generate the headers
             self.send_response( 200 ); # OK
-            self.send_header( "Content-type", "text/html" );
+            self.send_header( "Content-type", "application/javascript" );
             self.send_header( "Content-length", len( content ) );
             self.end_headers();
 
@@ -106,8 +106,23 @@ class MyHandler( BaseHTTPRequestHandler ):
                 <title> Shoot! </title>
             </head>
             <body>
-                <form action="/display.html" method="post" enctype="multipart/form-data">
-                <input type="file" id="board" name="stringboard.txt">A
+                <form action="/board.html" method="post" enctype="multipart/form-data">
+                <label for="board">Board: </label>
+                <input type="file" id="board" name="stringboard.txt">
+                <br/>
+                
+                <label for="turn">Turn: </label>
+                <input type="text" id="turn" name="turn">
+                <br/>
+                
+                <label for="wtime">Time Left for White (s):</label>
+                <input type="text" id="wtime" name="wtime">s
+                <br/>
+                
+                <label for="btime">Time Left for Black (s):</label>
+                <input type="text" id="btime" name="btime">s
+                <br/>
+                
                 <input type="submit">
                 </form>
             </body>
