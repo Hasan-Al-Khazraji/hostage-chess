@@ -221,17 +221,23 @@ class MyHandler( BaseHTTPRequestHandler ):
                                                } 
                                    );
         
-            # read file and convert to FEN
-            theBoard = form['stringboard.txt'].file.read().decode("utf-8");
-            theNewBoard = hclib.boardstring(theBoard);
-            fen_string = hclib.fen(theNewBoard, 'w', 'KQkq', '-', 0, 1);
-            
             # get turn
             turn = form.getvalue('turn')
             nextturn = 'b' if turn == 'w' else 'w'
             wtime = int(form.getvalue('wtime'))
             btime = int(form.getvalue('btime'))
             
+            # read file and convert to FEN
+            if 'stringboard.txt' in form:
+                if form['stringboard.txt'].filename:
+                    # It's a file; read its contents
+                    theBoard = form['stringboard.txt'].file.read().decode("utf-8")
+                    theNewBoard = hclib.boardstring(theBoard);
+                    fen_string = hclib.fen(theNewBoard, turn, 'KQkq', '-', 0, 1);
+                else:
+                    # It's a FEN string
+                    fen_string = form.getvalue('stringboard.txt') + " " + turn + " KQkq - 0 1"
+                    
             # read the HTML file and insert the form data
             content = f"""
             <!doctype html>
@@ -245,15 +251,15 @@ class MyHandler( BaseHTTPRequestHandler ):
                 <div id="myBoard" style="width: 400px"></div>
                 <div>
                     White: <a id='wMins'>{wtime // 60}</a>:<a id='wSecs'>{("0" + str(wtime % 60))[-2:]}</a>
-                    <form action="/board.html" method="post" enctype="multipart/form-data">
+                    <form action="/board.html" method="post" enctype="multipart/form-data" onsubmit="return onFormSubmit()">
                     
                         <input type="hidden" id="board" name="stringboard.txt">
                         
                         <input type="hidden" id="turn" name="turn" value={nextturn}>
                         
-                        <input type="hidden" id="wtime" name="wtime" value={wtime}>
+                        <input type="hidden" id="wtime" name="wtime">
                         
-                        <input type="hidden" id="btime" name="btime" value={btime}>
+                        <input type="hidden" id="btime" name="btime">
                         
                         <input type="submit" value="Done">
                     </form>
@@ -290,6 +296,14 @@ class MyHandler( BaseHTTPRequestHandler ):
                         position: '{fen_string}'
                     }}
                     var board = Chessboard('myBoard', config)
+                    
+                    function onFormSubmit() {{
+                        var newFen = board.fen();
+                        document.getElementById('board').value = newFen;
+                        document.getElementById('wtime').value = wtime;
+                        document.getElementById('btime').value = btime;
+                        return true;
+                    }}
                 </script>
             </body>
             </html>
