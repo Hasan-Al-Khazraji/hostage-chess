@@ -275,7 +275,7 @@ exboard_t *boardstring(char *string)
 	}
 	board->bairfield[i - 18 + secondLine] = '\0';
 
-	// Fill wprison
+	// Fill wairfield
 	i = 126;
 	secondLine = 0;
 	for (; i < 143 && string[i] != ' '; i++)
@@ -287,12 +287,12 @@ exboard_t *boardstring(char *string)
 		}
 		else
 		{
-			board->wprison[i - 126 + secondLine] = string[i];
+			board->wairfield[i - 126 + secondLine] = string[i];
 		}
 	}
-	board->wprison[i - 126 + secondLine] = '\0';
+	board->wairfield[i - 126 + secondLine] = '\0';
 
-	// Fill wairfield
+	// Fill wprison
 	i = 144;
 	secondLine = 0;
 	for (; i < 161 && string[i] != ' '; i++)
@@ -304,10 +304,10 @@ exboard_t *boardstring(char *string)
 		}
 		else
 		{
-			board->wairfield[i - 144 + secondLine] = string[i];
+			board->wprison[i - 144 + secondLine] = string[i];
 		}
 	}
-	board->wairfield[i - 144 + secondLine] = '\0';
+	board->wprison[i - 144 + secondLine] = '\0';
 
 	// Fill the board
 	for (int i = 0; i < 8; i++)
