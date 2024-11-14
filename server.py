@@ -249,8 +249,8 @@ class MyHandler( BaseHTTPRequestHandler ):
             <body>
                 <!--- Begin Example HTML ------------------------------------------------------>
                 <div id="myBoard" style="width: 400px"></div>
-                <div>
-                    White: <a id='wMins'>{wtime // 60}</a>:<a id='wSecs'>{("0" + str(wtime % 60))[-2:]}</a>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <p>White: <a id='wMins'>{wtime // 60}</a>:<a id='wSecs'>{("0" + str(wtime % 60))[-2:]}</a></p>
                     <form action="/board.html" method="post" enctype="multipart/form-data" onsubmit="return onFormSubmit()">
                     
                         <input type="hidden" id="board" name="stringboard.txt">
@@ -263,7 +263,7 @@ class MyHandler( BaseHTTPRequestHandler ):
                         
                         <input type="submit" value="Done">
                     </form>
-                    <a id='bMins'>{btime // 60}</a>:<a id='bSecs'>{("0" + str(btime % 60))[-2:]}</a> :Black
+                    <p><a id='bMins'>{btime // 60}</a>:<a id='bSecs'>{("0" + str(btime % 60))[-2:]}</a> :Black</p>
                 </div>
                 <!--- End Example HTML -------------------------------------------------------->
                 <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
