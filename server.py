@@ -3,6 +3,40 @@ import cgi; # used to parse Mutlipart FormData
 from http.server import HTTPServer, BaseHTTPRequestHandler;
 from urllib.parse import urlparse, parse_qsl;
 import hclib;
+import os;
+import sqlite3;
+
+GAME_TIME = 300
+
+conn = sqlite3.connect('chess.db')
+cur = conn.cursor()
+
+cur.execute("""
+            CREATE TABLE IF NOT EXISTS games (
+                GAME_NO INTEGER PRIMARY KEY,
+                WHITE_HANDLE VARCHAR(32),
+                BLACK_HANDLE VARCHAR(32),
+                RESULT VARCHAR(256)
+            );
+            """)
+cur.execute("""
+            CREATE TABLE IF NOT EXISTS moves (
+                GAME_NO INTEGER,
+                TURN_NO, INTEGER,
+                TURN CHAR(1),
+                BOARD TEXT,
+                REAL_TIME DATETIME DEFAULT CURRENT_TIMESTAMP,
+                WHITE_TIME INTEGER,
+                BLACK_TIME INTEGER,
+                FOREIGN KEY (GAME_NO) REFERENCES games(GAME_NO),
+                PRIMARY KEY (GAME_NO, TURN_NO)
+            );
+            """)
+data = cur.execute("""SELECT * FROM sqlite_master;""")
+print(data.fetchone())
+cur.close()
+conn.commit()
+conn.close()
 
 
 # handler for our web-server - handles both GET and POST requests
@@ -12,7 +46,7 @@ class MyHandler( BaseHTTPRequestHandler ):
         parsed  = urlparse(self.path);
 
         # check if the web-pages matches the list
-        if parsed.path in ['/']:
+        if parsed.path in ['/'] or parsed.path in ['/index.html']:
             fp = open('./client/pages/welcome.html')
             content = fp.read()
             # generate the headers
@@ -24,29 +58,26 @@ class MyHandler( BaseHTTPRequestHandler ):
             # send it to the broswer
             self.wfile.write( bytes( content, "utf-8" ) );
         
-        elif parsed.path in [ '/start.html' ]:
+        elif parsed.path in [ '/css/welcome.css' ]:
 
             # retreive the HTML file
-            fp = open("./client/pages" + self.path)
-            content = fp.read()
+            fp = open( './client'+self.path );
+            content = fp.read();
 
             # generate the headers
             self.send_response( 200 ); # OK
-            self.send_header( "Content-type", "text/html" );
+            self.send_header( "Content-type", "text/css" );
             self.send_header( "Content-length", len( content ) );
             self.end_headers();
 
             # send it to the broswer
             self.wfile.write( bytes( content, "utf-8" ) );
-        
-        ### PART 1
-        
-        # serve index.html
-        elif parsed.path in [ '/index.html' ]:
+            
+        elif parsed.path in [ '/start.html' ]:
 
             # retreive the HTML file
-            fp = open( './client/pages'+self.path );
-            content = fp.read();
+            fp = open("./client/pages" + self.path)
+            content = fp.read()
 
             # generate the headers
             self.send_response( 200 ); # OK
