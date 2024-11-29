@@ -3,9 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../css/welcome.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=history" />
     <title>Hostage Chess</title>
 </head>
 <body>
-    <h1>WELCOME TO HOSTAGE CHESS</h1>
+    <div class="min-h-screen" id="background">
+        <main class="container mx-auto px-4 py-8">
+            <section class="text-center mb-12">
+                <div class="grid justify-items-center">
+                    <img src="../img/chesspieces/wikipedia/bQ.png" alt="King">
+                </div>
+                <h2 class="text-4xl font-bold text-gray-900 mb-4 text-white drop-shadow-sm">Hostage Chess</h2>
+                <p class="text-xl text-white">Your captured pieces, are <a class="underline underline-offset-4 decoration-yellow-200">back!</a></p>
+            </section>
+
+            <div>
+                <div class="bg-white rounded-lg shadow-md p-6 justify-items-center">
+                    <h3 class="text-2xl font-semibold mb-4">Get Started</h3>
+                    <form action="/login.html" method="POST" class="mb-4">
+                        <input type="text" name="handle" placeholder="Username" class="w-full p-2 mb-4 border rounded" required>
+                        <div class="flex justify-center">
+                            <button type="submit" class="bg-yellow-400 px-6 py-2 rounded-lg transition ease-in-out hover:scale-110 hover:bg-yellow-600">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+        <a href="./history.html">
+            <button class="fixed bottom-6 right-6 bg-yellow-400 transition ease-in-out hover:bg-yellow-600 hover:scale-110 text-white px-4 pt-4 pb-2 rounded-full shadow-lg">
+                <span class="material-symbols-outlined">history</span>
+            </button>
+        </a>
+    </div>
 </body>
 </html>
