@@ -12,30 +12,23 @@ class MyHandler( BaseHTTPRequestHandler ):
         parsed  = urlparse(self.path);
 
         # check if the web-pages matches the list
-        if parsed.path in [ '/start.html' ]:
+        if parsed.path in ['/']:
+            fp = open('./client/pages/welcome.html')
+            content = fp.read()
+            # generate the headers
+            self.send_response( 200 ); # OK
+            self.send_header( "Content-type", "text/html" );
+            self.send_header( "Content-length", len( content ) );
+            self.end_headers();
+
+            # send it to the broswer
+            self.wfile.write( bytes( content, "utf-8" ) );
+        
+        elif parsed.path in [ '/start.html' ]:
 
             # retreive the HTML file
-            content = """
-                <!DOCTYPE html>
-                <html lang="en">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Chessboard Integration</title>
-                    <!-- Chessboard.js CSS -->
-                    <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css" integrity="sha384-q94+BZtLrkL1/ohfjR8c6L+A6qzNH9R2hBLwyoAfu3i/WCvQjzL2RQJ3uNHDISdU" crossorigin="anonymous">
-                    <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script>
-                    <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js" integrity="sha384-8Vi8VHwn3vjQ9eUHUxex3JSN/NFqUg3QbPyX8kWyb93+8AC/pPWTzj+nHtbC5bxD" crossorigin="anonymous"></script>
-                </head>
-                <body>
-                        <div id="board1" style="width: 400px"></div>
-
-                    <script>
-                        var board1 = Chessboard('board1', 'start')
-                    </script>
-                    </body>
-                </html>
-            """
+            fp = open("./client/pages" + self.path)
+            content = fp.read()
 
             # generate the headers
             self.send_response( 200 ); # OK
@@ -52,7 +45,7 @@ class MyHandler( BaseHTTPRequestHandler ):
         elif parsed.path in [ '/index.html' ]:
 
             # retreive the HTML file
-            fp = open( '.'+self.path );
+            fp = open( './client/pages'+self.path );
             content = fp.read();
 
             # generate the headers
@@ -68,7 +61,7 @@ class MyHandler( BaseHTTPRequestHandler ):
         elif parsed.path in [ '/css/chessboard-1.0.0.css' ]:
 
             # retreive the HTML file
-            fp = open( '.'+self.path );
+            fp = open( './client'+self.path );
             content = fp.read();
 
             # generate the headers
@@ -84,7 +77,7 @@ class MyHandler( BaseHTTPRequestHandler ):
         elif parsed.path in [ '/js/chessboard-1.0.0.js' ]:
 
             # retreive the HTML file
-            fp = open( '.'+self.path );
+            fp = open( './client'+self.path );
             content = fp.read();
 
             # generate the headers
@@ -100,34 +93,8 @@ class MyHandler( BaseHTTPRequestHandler ):
         elif parsed.path in [ '/upload.html' ]:
 
             # retreive the HTML file
-            content = """
-            <html>
-            <head>
-                <title> Shoot! </title>
-            </head>
-            <body>
-                <form action="/board.html" method="post" enctype="multipart/form-data">
-                <label for="board">Board: </label>
-                <input type="file" id="board" name="stringboard.txt">
-                <br/>
-                
-                <label for="turn">Turn: </label>
-                <input type="text" id="turn" name="turn">
-                <br/>
-                
-                <label for="wtime">Time Left for White (s):</label>
-                <input type="text" id="wtime" name="wtime">s
-                <br/>
-                
-                <label for="btime">Time Left for Black (s):</label>
-                <input type="text" id="btime" name="btime">s
-                <br/>
-                
-                <input type="submit">
-                </form>
-            </body>
-            </html>
-            """
+            fp = open( './client/pages'+self.path );
+            content = fp.read();
 
             # generate the headers
             self.send_response( 200 ); # OK
@@ -141,7 +108,7 @@ class MyHandler( BaseHTTPRequestHandler ):
         # IMAGES FROM START, THIS TOOK SO LONG
         elif parsed.path[:5] == '/img/':
             # retrieve the image file
-            fp = open('.' + self.path, 'rb')
+            fp = open('./client' + self.path, 'rb')
             content = fp.read()
 
             # generate the headers
@@ -326,6 +293,6 @@ class MyHandler( BaseHTTPRequestHandler ):
 
 
 if __name__ == "__main__":
-    httpd = HTTPServer( ( 'localhost', int(sys.argv[1]) ), MyHandler );
+    httpd = HTTPServer( ( '0.0.0.0', int(sys.argv[1]) ), MyHandler );
     print( "Server listing in port:  ", int(sys.argv[1]) );
     httpd.serve_forever();

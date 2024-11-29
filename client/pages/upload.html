@@ -1,0 +1,29 @@
+<html>
+
+<head>
+    <title> Shoot! </title>
+</head>
+
+<body>
+    <form action="/board.html" method="post" enctype="multipart/form-data">
+        <label for="board">Board: </label>
+        <input type="file" id="board" name="stringboard.txt">
+        <br />
+
+        <label for="turn">Turn: </label>
+        <input type="text" id="turn" name="turn">
+        <br />
+
+        <label for="wtime">Time Left for White (s):</label>
+        <input type="text" id="wtime" name="wtime">s
+        <br />
+
+        <label for="btime">Time Left for Black (s):</label>
+        <input type="text" id="btime" name="btime">s
+        <br />
+
+        <input type="submit">
+    </form>
+</body>
+
+</html>
