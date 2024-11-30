@@ -22,7 +22,7 @@ cur.execute("""
 cur.execute("""
             CREATE TABLE IF NOT EXISTS moves (
                 GAME_NO INTEGER,
-                TURN_NO, INTEGER,
+                TURN_NO INTEGER,
                 TURN CHAR(1),
                 BOARD TEXT,
                 REAL_TIME DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -151,6 +151,36 @@ class MyHandler( BaseHTTPRequestHandler ):
             # send it to the browser
             self.wfile.write(content)
             fp.close()
+            
+        # Add check_opponent handler to GET section:
+        elif parsed.path.startswith('/check_opponent'):
+            query = dict(parse_qsl(parsed.query))
+            game_no = query.get('game_no')
+            
+            conn = sqlite3.connect('chess.db')
+            cursor = conn.cursor()
+            cursor.execute("SELECT BLACK_HANDLE FROM games WHERE GAME_NO = ?", (game_no,))
+            black_handle = cursor.fetchone()[0]
+            conn.close()
+            
+            # HOLY I GOT IT
+            black_handle_adjusted = "null" if black_handle is None else "\"" + black_handle + "\""
+            content = f'{{"black_handle": {black_handle_adjusted}}}'
+            
+            self.send_response(200)
+            self.send_header("Content-type", "application/json")
+            self.send_header("Content-length", len(content))
+            self.end_headers()
+            self.wfile.write(bytes(content, "utf-8"))
+        
+        elif parsed.path in [ '/js/waiting.js' ]:
+            fp = open('./client' + self.path)
+            content = fp.read()
+            self.send_response(200)
+            self.send_header("Content-type", "application/javascript")
+            self.send_header("Content-length", len(content))
+            self.end_headers()
+            self.wfile.write(bytes(content, "utf-8"))
 
         else:
             # generate 404 for GET requests that aren't the 3 files above
@@ -314,6 +344,111 @@ class MyHandler( BaseHTTPRequestHandler ):
             self.end_headers();
 
             # send it to the browser
+            self.wfile.write( bytes( content, "utf-8" ) );
+
+        elif parsed.path in [ '/login.html' ]:
+            # get the form data
+            form = cgi.FieldStorage( fp=self.rfile,
+                                     headers=self.headers,
+                                     environ = { 'REQUEST_METHOD': 'POST',
+                                                 'CONTENT_TYPE': 
+                                                   self.headers['Content-Type'],
+                                               } 
+                                   );
+        
+            # get handle from the form-dataw
+            handle = form.getvalue('handle')
+            
+            # Connect to DB
+            conn = sqlite3.connect('chess.db')
+            cur = conn.cursor()
+            
+            # Check for open game
+            cur.execute("""SELECT GAME_NO FROM games WHERE BLACK_HANDLE IS NULL LIMIT 1""")
+            open_game = cur.fetchone()
+            
+            # handle no game case
+            if not open_game:
+                # Gets the "game number one larger than the largest number already in the table"
+                cur.execute("""SELECT MAX(GAME_NO) FROM games""")
+                max_game = cur.fetchone()[0]
+                game_no = 1 if max_game is None else max_game + 1
+                
+                # Send game # and white handle but NOT black handle and result
+                cur.execute(
+                    """INSERT INTO games (GAME_NO, WHITE_HANDLE, BLACK_HANDLE) VALUES (?, ?, NULL)""",
+                    (game_no, handle)
+                )
+                
+                # content = fp.open('./client/pages/loading.html').read()
+                content = f"""
+                <!DOCTYPE html>
+                <html>
+
+                <head>
+                    <title>Loading</title>
+                    <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+                    <script src="https://cdn.tailwindcss.com"></script>
+                    <script>
+                        window.gameNumber = {game_no};
+                    </script>
+                    <script src="js/waiting.js"></script>
+                </head>
+
+                <body class="bg-[#D9C6B0]">
+                    <div class="min-h-screen flex items-center justify-center">
+                        <div class="text-center justify-items-center">
+                            <div class="flex justify-center">
+                                <img src="../img/chesspieces/wikipedia/bN.png" alt="Black Queen" class="animate-bounce drop-shadow-md">
+                            </div>
+                            <h1 class="text-4xl font-bold text-white my-4 drop-shadow-md animate-pulse">{handle} is waiting for their opponent to connect...</h1>
+                            <h2 class="text-2xl font-bold text-gray-100 my-4 drop-shadow-md animate-pulse">Lobby: #{game_no}</h2>
+                        </div>
+                    </div>
+                </body>
+                </html>
+                """
+            else:
+                # join existing game
+                game_no = open_game[0]
+                
+                # Update game w/ black player
+                cur.execute(
+                    "UPDATE games SET BLACK_HANDLE =? WHERE GAME_NO = ?",
+                    (handle, game_no)
+                )
+                
+                # Initial board state
+                cur.execute("""
+                    INSERT INTO moves (GAME_NO, TURN_NO, TURN, BOARD, WHITE_TIME, BLACK_TIME)
+                    VALUES (?, 1, 'w', 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR', ?, ?)
+                """, (game_no, GAME_TIME, GAME_TIME))
+                
+                # Send redirect page for part 5?
+                content = f"""
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Starting Game</title>
+                    <script>
+                        window.location.href = '/opponent.html?game_no={game_no}&turn_no=1';
+                    </script>
+                </head>
+                <body>
+                    <h1>Starting game...</h1>
+                </body>
+                </html>
+                """
+    
+            # close db
+            conn.commit()
+            conn.close()
+
+            # response
+            self.send_response( 200 ); # OK
+            self.send_header( "Content-type", "text/html" );
+            self.send_header( "Content-length", len( content ) );
+            self.end_headers();
             self.wfile.write( bytes( content, "utf-8" ) );
 
         else:
