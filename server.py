@@ -3,6 +3,7 @@ import cgi; # used to parse Mutlipart FormData
 from http.server import HTTPServer, BaseHTTPRequestHandler;
 from urllib.parse import urlparse, parse_qsl;
 import hclib;
+import datetime;
 import os;
 import sqlite3;
 
@@ -87,6 +88,210 @@ class MyHandler( BaseHTTPRequestHandler ):
 
             # send it to the broswer
             self.wfile.write( bytes( content, "utf-8" ) );
+            
+        elif parsed.path.startswith('/player.html'):
+            # Get query parameters
+            query = dict(parse_qsl(parsed.query))
+            game_no = query.get('game_no')
+            turn_no = query.get('turn_no')
+            
+            # Get game state from DB
+            conn = sqlite3.connect('chess.db')
+            cur = conn.cursor()
+            cur.execute("""
+                SELECT TURN, BOARD, REAL_TIME, WHITE_TIME, BLACK_TIME 
+                FROM moves 
+                WHERE GAME_NO = ? AND TURN_NO = ?
+            """, (game_no, turn_no))
+            
+            row = cur.fetchone()
+            if not row:
+                self.send_error(404, "Game state not found")
+                return
+                
+            turn, board, real_time, wtime, btime = row
+            conn.close()
+
+            # Generate HTML response
+            content = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Hostage Chess - {"White's Turn" if turn == 'w' else "Black's Turn"}</title>
+                <link rel="stylesheet" href="css/chessboard-1.0.0.css">
+            </head>
+            <body>
+                <div id="myBoard" style="width: 400px"></div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <p>White: <span id='wMins'>{wtime // 60}</span>:<span id='wSecs'>{("0" + str(wtime % 60))[-2:]}</span></p>
+                    <form action="/opponent.html" method="GET" onsubmit="return onFormSubmit()">
+                        <input type="hidden" id="board" name="board">
+                        
+                        <input type="hidden" name="game_no" value="{game_no}">
+                        
+                        <input type="hidden" name="turn_no" value="{int(turn_no) + 1}">
+                        
+                        <input type="submit" value="Done">
+                    </form>
+                    <p><span id='bMins'>{btime // 60}</span>:<span id='bSecs'>{("0" + str(btime % 60))[-2:]}</span> :Black</p>
+                </div>
+
+                <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+                <script src="js/chessboard-1.0.0.js"></script>
+                <script>
+                    let turn = "{turn}";
+                    let wtime = {wtime};
+                    let btime = {btime};
+                    
+                    setInterval(() => {{
+                        if (turn === 'w' && wtime > 0){{
+                            wtime--;
+                            document.getElementById('wMins').innerHTML = Math.floor(wtime / 60);
+                            document.getElementById('wSecs').innerHTML = ("0" + (wtime % 60).toString()).slice(-2)
+                        }}
+                        else if (turn === 'b' && btime > 0) {{
+                            btime--;
+                            document.getElementById('bMins').innerHTML = Math.floor(btime / 60);
+                            document.getElementById('bSecs').innerHTML = ("0" + (btime % 60).toString()).slice(-2)
+                        }}
+                    }}, 1000);
+
+                    var config = {{
+                        draggable: true,
+                        dropOffBoard: 'snapback',
+                        position: '{board}'
+                    }};
+                    var board = Chessboard('myBoard', config);
+
+                    function onFormSubmit() {{
+                        document.getElementById('board').value = board.fen();
+                        return true;
+                    }}
+                </script>
+            </body>
+            </html>
+            """
+
+            self.send_response(200)
+            self.send_header("Content-type", "text/html")
+            self.send_header("Content-length", len(content))
+            self.end_headers()
+            self.wfile.write(bytes(content, "utf-8"))
+        
+        elif parsed.path.startswith('/opponent.html'):
+            # Get query parameters
+            query = dict(parse_qsl(parsed.query))
+            game_no = query.get('game_no')
+            turn_no = query.get('turn_no')
+            board = query.get('board')
+            
+            # Get game state from DB
+            conn = sqlite3.connect('chess.db')
+            cur = conn.cursor()
+            
+            cur.execute("""
+                SELECT TURN, BOARD, REAL_TIME, WHITE_TIME, BLACK_TIME 
+                FROM moves 
+                WHERE GAME_NO = ? AND TURN_NO = ?
+            """, (game_no, int(turn_no) - 1))
+            
+            row = cur.fetchone()
+            if row is None:
+                self.send_error(404, "Previous game state not found")
+                return
+            prev_turn, prev_board, prev_real_time, prev_wtime, prev_btime = row
+            
+            # https://stackoverflow.com/questions/15940280/how-to-get-utc-time-in-python
+            new_real_time = datetime.datetime.utcnow()
+            time_diff = (new_real_time - datetime.datetime.strptime(prev_real_time, "%Y-%m-%d %H:%M:%S")).seconds
+            
+            if prev_turn == 'w':
+                turn = 'b'
+                new_wtime = prev_wtime - time_diff
+                new_btime = prev_btime
+                if new_wtime < 0:
+                    cur.execute("UPDATE games SET RESULT = 'Black' WHERE GAME_NO = ?", (game_no,))
+            else:
+                turn = 'w'
+                new_btime = prev_btime - time_diff
+                new_wtime = prev_wtime
+                if new_btime < 0:
+                    cur.execute("UPDATE games SET RESULT = 'White' WHERE GAME_NO = ?", (game_no,))
+                    
+            cur.execute("""
+                INSERT INTO moves (GAME_NO, TURN_NO, TURN, BOARD, REAL_TIME, WHITE_TIME, BLACK_TIME) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)            
+            """, (game_no, turn_no, turn, board, new_wtime, new_btime))
+            
+            conn.commit()
+            conn.close()
+            
+
+            # Generate HTML response
+            content = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Hostage Chess - {"White's Turn" if turn == 'w' else "Black's Turn"}</title>
+                <link rel="stylesheet" href="css/chessboard-1.0.0.css">
+            </head>
+            <body>
+                <h1>Opponent's Turn</h1>
+                <div id="myBoard" style="width: 400px"></div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <p>White: <span id='wMins'>{new_wtime // 60}</span>:<span id='wSecs'>{("0" + str(new_wtime % 60))[-2:]}</span></p>
+                    <form action="/opponent.html" method="GET" onsubmit="return onFormSubmit()">
+                        <input type="hidden" id="board" name="board">
+                        
+                        <input type="hidden" name="game_no" value="{game_no}">
+                        
+                        <input type="hidden" name="turn_no" value="{int(turn_no) + 1}">
+                        
+                        <input type="submit" value="Done" disabled>
+                    </form>
+                    <p><span id='bMins'>{new_btime // 60}</span>:<span id='bSecs'>{("0" + str(new_btime % 60))[-2:]}</span> :Black</p>
+                </div>
+
+                <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+                <script src="js/chessboard-1.0.0.js"></script>
+                <script>
+                    let turn = "{turn}";
+                    let wtime = {new_wtime};
+                    let btime = {new_btime};
+                    
+                    setInterval(() => {{
+                        if (turn === 'w' && wtime > 0){{
+                            wtime--;
+                            document.getElementById('wMins').innerHTML = Math.floor(wtime / 60);
+                            document.getElementById('wSecs').innerHTML = ("0" + (wtime % 60).toString()).slice(-2)
+                        }}
+                        else if (turn === 'b' && btime > 0) {{
+                            btime--;
+                            document.getElementById('bMins').innerHTML = Math.floor(btime / 60);
+                            document.getElementById('bSecs').innerHTML = ("0" + (btime % 60).toString()).slice(-2)
+                        }}
+                    }}, 1000);
+
+                    var config = {{
+                        draggable: false,
+                        dropOffBoard: 'snapback',
+                        position: '{board}'
+                    }};
+                    var board = Chessboard('myBoard', config);
+
+                    function onFormSubmit() {{
+                        document.getElementById('board').value = board.fen();
+                        return true;
+                    }}
+                </script>
+            </body>
+            </html>
+            """
+
+            self.send_response(200)
+            self.send_header("Content-type", "text/html")
+            self.send_header("Content-length", len(content))
+            self.end_headers()
+            self.wfile.write(bytes(content, "utf-8"))
         
         # serve chessboard.css
         elif parsed.path in [ '/css/chessboard-1.0.0.css' ]:
@@ -408,6 +613,8 @@ class MyHandler( BaseHTTPRequestHandler ):
                 </body>
                 </html>
                 """
+                ### NOE FORT NEXT TIME
+                #### ADD HIDDEN FORM FOR GAME_NO AND tURN_NO TO ABOVE AND TEN GET THOSE IN PLAYER.HTML
             else:
                 # join existing game
                 game_no = open_game[0]
