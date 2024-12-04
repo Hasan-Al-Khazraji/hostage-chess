@@ -183,47 +183,54 @@ class MyHandler( BaseHTTPRequestHandler ):
             query = dict(parse_qsl(parsed.query))
             game_no = query.get('game_no')
             turn_no = query.get('turn_no')
-            board = query.get('board')
+            if (query.get('board')):
+                board = query.get('board')
+                
+                # Get game state from DB
+                conn = sqlite3.connect('chess.db')
+                cur = conn.cursor()
+                
+                cur.execute("""
+                    SELECT TURN, BOARD, REAL_TIME, WHITE_TIME, BLACK_TIME 
+                    FROM moves 
+                    WHERE GAME_NO = ? AND TURN_NO = ?
+                """, (game_no, int(turn_no) - 1))
+                
+                row = cur.fetchone()
+                if row is None:
+                    self.send_error(404, "Previous game state not found")
+                    return
+                prev_turn, prev_board, prev_real_time, prev_wtime, prev_btime = row
+                
+                # https://stackoverflow.com/questions/15940280/how-to-get-utc-time-in-python
+                new_real_time = datetime.datetime.utcnow()
+                time_diff = (new_real_time - datetime.datetime.strptime(prev_real_time, "%Y-%m-%d %H:%M:%S")).seconds
+                
+                if prev_turn == 'w':
+                    turn = 'b'
+                    new_wtime = prev_wtime - time_diff
+                    new_btime = prev_btime
+                    if new_wtime < 0:
+                        cur.execute("UPDATE games SET RESULT = 'Black' WHERE GAME_NO = ?", (game_no,))
+                else:
+                    turn = 'w'
+                    new_btime = prev_btime - time_diff
+                    new_wtime = prev_wtime
+                    if new_btime < 0:
+                        cur.execute("UPDATE games SET RESULT = 'White' WHERE GAME_NO = ?", (game_no,))
+                        
+                cur.execute("""
+                    INSERT INTO moves (GAME_NO, TURN_NO, TURN, BOARD, REAL_TIME, WHITE_TIME, BLACK_TIME) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)            
+                """, (game_no, turn_no, turn, board, new_wtime, new_btime))
+                
+                conn.commit()
+                conn.close()
             
-            # Get game state from DB
-            conn = sqlite3.connect('chess.db')
-            cur = conn.cursor()
-            
-            cur.execute("""
-                SELECT TURN, BOARD, REAL_TIME, WHITE_TIME, BLACK_TIME 
-                FROM moves 
-                WHERE GAME_NO = ? AND TURN_NO = ?
-            """, (game_no, int(turn_no) - 1))
-            
-            row = cur.fetchone()
-            if row is None:
-                self.send_error(404, "Previous game state not found")
-                return
-            prev_turn, prev_board, prev_real_time, prev_wtime, prev_btime = row
-            
-            # https://stackoverflow.com/questions/15940280/how-to-get-utc-time-in-python
-            new_real_time = datetime.datetime.utcnow()
-            time_diff = (new_real_time - datetime.datetime.strptime(prev_real_time, "%Y-%m-%d %H:%M:%S")).seconds
-            
-            if prev_turn == 'w':
-                turn = 'b'
-                new_wtime = prev_wtime - time_diff
-                new_btime = prev_btime
-                if new_wtime < 0:
-                    cur.execute("UPDATE games SET RESULT = 'Black' WHERE GAME_NO = ?", (game_no,))
-            else:
+            else: 
+                board = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR'
                 turn = 'w'
-                new_btime = prev_btime - time_diff
-                new_wtime = prev_wtime
-                if new_btime < 0:
-                    cur.execute("UPDATE games SET RESULT = 'White' WHERE GAME_NO = ?", (game_no,))
-                    
-            cur.execute("""
-                INSERT INTO moves (GAME_NO, TURN_NO, TURN, BOARD, REAL_TIME, WHITE_TIME, BLACK_TIME) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)            
-            """, (game_no, turn_no, turn, board, new_wtime, new_btime))
-            
-            conn.commit()
-            conn.close()
+                new_wtime = 300
+                new_btime = 300
             
 
             # Generate HTML response
@@ -233,6 +240,12 @@ class MyHandler( BaseHTTPRequestHandler ):
             <head>
                 <title>Hostage Chess - {"White's Turn" if turn == 'w' else "Black's Turn"}</title>
                 <link rel="stylesheet" href="css/chessboard-1.0.0.css">
+                <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+                <script>
+                        window.gameNumber = {game_no};
+                        window.turnNumber = {turn_no};
+                    </script>
+                <script src="js/opponent.js"></script>
             </head>
             <body>
                 <h1>Opponent's Turn</h1>
@@ -289,6 +302,33 @@ class MyHandler( BaseHTTPRequestHandler ):
 
             self.send_response(200)
             self.send_header("Content-type", "text/html")
+            self.send_header("Content-length", len(content))
+            self.end_headers()
+            self.wfile.write(bytes(content, "utf-8"))
+            
+        elif parsed.path.startswith('/check_new_move'):
+            query = dict(parse_qsl(parsed.query))
+            game_no = query.get('game_no')
+            turn_no = query.get('turn_no')
+            
+            conn = sqlite3.connect('chess.db')
+            cursor = conn.cursor()
+            cursor.execute("""
+            SELECT COUNT(*)
+            FROM moves
+            WHERE GAME_NO = ?
+            """, (game_no,))
+            counts = cursor.fetchone()[0]
+            move_exists = int(counts) > int(turn_no)
+            print(counts)
+            print(turn_no)
+            conn.close()
+            
+            new_move = "null" if move_exists is False else "\"" + str(move_exists) + "\""
+            content = f'{{"new_move": {new_move}}}'
+            
+            self.send_response(200)
+            self.send_header("Content-type", "application/json")
             self.send_header("Content-length", len(content))
             self.end_headers()
             self.wfile.write(bytes(content, "utf-8"))
@@ -379,6 +419,15 @@ class MyHandler( BaseHTTPRequestHandler ):
             self.wfile.write(bytes(content, "utf-8"))
         
         elif parsed.path in [ '/js/waiting.js' ]:
+            fp = open('./client' + self.path)
+            content = fp.read()
+            self.send_response(200)
+            self.send_header("Content-type", "application/javascript")
+            self.send_header("Content-length", len(content))
+            self.end_headers()
+            self.wfile.write(bytes(content, "utf-8"))
+            
+        elif parsed.path in [ '/js/opponent.js' ]:
             fp = open('./client' + self.path)
             content = fp.read()
             self.send_response(200)
