@@ -369,6 +369,80 @@ class MyHandler( BaseHTTPRequestHandler ):
             self.send_header("Content-length", len(content))
             self.end_headers()
             self.wfile.write(bytes(content, "utf-8"))
+            
+        elif parsed.path.startswith('/history.html'):
+            
+            conn = sqlite3.connect('chess.db')
+            cur = conn.cursor()
+            cur.execute("SELECT GAME_NO, WHITE_HANDLE, BLACK_HANDLE, RESULT FROM games")
+            games = cur.fetchall()
+            conn.close()
+
+            # Generate HTML response
+            content = """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>History</title>
+                <link rel="stylesheet" href="../css/history.css">
+                <script src="https://cdn.tailwindcss.com"></script>
+                <script>
+                    function loadGame(gameNo) {
+                        window.location.href = '/gamelog.html?game_no=' + gameNo;
+                    }
+                </script>
+            </head>
+            <body class="bg-[#04BF9D]">
+                <div class="flex justify-center items-center my-8">
+                    <img src="../img/chesspieces/wikipedia/wK.png" alt="King">
+                    <h1 class="text-center font-bold text-5xl">   History   </h1>
+                    <img src="../img/chesspieces/wikipedia/bK.png" alt="King">
+                </div>
+                <div class="px-20">
+                <table class="mb-20">
+                    <tr>
+                        <th class="text-center text-2xl">Game Number</th>
+                        <th class="text-center text-2xl">White Player</th>
+                        <th class="text-center text-2xl">Black Player</th>
+                        <th class="text-center text-2xl">Result</th>
+                    </tr>
+            """
+            for game in games:
+                content += f"""
+                    <tr onclick="loadGame({game[0]})">
+                        <td>{game[0]}</td>
+                        <td>{game[1]}</td>
+                        <td>{game[2]}</td>
+                        <td>{game[3]}</td>
+                    </tr>
+                """
+            content += """
+                </table>
+                </div>
+            </body>
+            </html>
+            """
+
+            self.send_response(200)
+            self.send_header("Content-type", "text/html")
+            self.send_header("Content-length", len(content))
+            self.end_headers()
+            self.wfile.write(bytes(content, "utf-8"))
+        
+        elif parsed.path in [ '/css/history.css' ]:
+
+            # retreive the HTML file
+            fp = open( './client'+self.path );
+            content = fp.read();
+
+            # generate the headers
+            self.send_response( 200 ); # OK
+            self.send_header( "Content-type", "text/css" );
+            self.send_header( "Content-length", len( content ) );
+            self.end_headers();
+
+            # send it to the broswer
+            self.wfile.write( bytes( content, "utf-8" ) );
         
         # serve chessboard.css
         elif parsed.path in [ '/css/chessboard-1.0.0.css' ]:
