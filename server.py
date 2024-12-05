@@ -7,7 +7,7 @@ import datetime;
 import os;
 import sqlite3;
 
-GAME_TIME = 300
+GAME_TIME = 10
 
 conn = sqlite3.connect('chess.db')
 cur = conn.cursor()
@@ -232,8 +232,8 @@ class MyHandler( BaseHTTPRequestHandler ):
             else: 
                 board = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR'
                 turn = 'w'
-                new_wtime = 300
-                new_btime = 300
+                new_wtime = GAME_TIME
+                new_btime = GAME_TIME
                 winner = None
             
             # Generate normal opponent
