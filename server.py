@@ -334,7 +334,44 @@ class MyHandler( BaseHTTPRequestHandler ):
             self.send_header("Content-length", len(content))
             self.end_headers()
             self.wfile.write(bytes(content, "utf-8"))
-
+            
+        elif parsed.path.startswith('/check_king'):
+            query = dict(parse_qsl(parsed.query))
+            game_no = query.get('game_no')
+            turn_no = query.get('turn_no')
+            kingTaken = False
+            winner = None
+            
+            conn = sqlite3.connect('chess.db')
+            cur = conn.cursor()
+            cur.execute("""
+            SELECT BOARD
+            FROM moves
+            WHERE GAME_NO = ? AND TURN_NO = ?
+            """, (game_no, int(turn_no)))
+            board = str(cur.fetchone()[0])
+            print("board: " + board)
+            if 'k' not in str(board):
+                cur.execute("UPDATE games SET RESULT = 'White' WHERE GAME_NO = ?", (game_no,))
+                kingTaken = True
+                winner = "White"
+            elif 'K' not in str(board):
+                cur.execute("UPDATE games SET RESULT = 'Black' WHERE GAME_NO = ?", (game_no,))
+                kingTaken = True
+                winner = "Black"
+            conn.commit()
+            conn.close()
+            
+            theWinner = "null" if winner is None else "\"" + str(winner) + "\""
+            kingTakenContent = "null" if kingTaken is False else "\"" + "TAKEN" + "\""
+            content = f'{{"kingTaken": {kingTakenContent}, "winner": {theWinner}}}'
+            print(content)
+            
+            self.send_response(200)
+            self.send_header("Content-type", "application/json")
+            self.send_header("Content-length", len(content))
+            self.end_headers()
+            self.wfile.write(bytes(content, "utf-8"))
             
         elif parsed.path.startswith('/check_new_move'):
             query = dict(parse_qsl(parsed.query))

@@ -9,7 +9,7 @@ $(document).ready(function () {
             data: { game_no: game_no, turn_no: turn_no },
             success: function (response) {
                 if (response.new_move && response.new_move !== "null") {
-                    window.location.href = `/player.html?game_no=${game_no}&turn_no=${turn_no + 1}`;
+                    checkKingBeforeRedirect();
                 }
             },
             error: function () {
@@ -36,7 +36,42 @@ $(document).ready(function () {
         });
     }
 
+    function checkKing() {
+        $.ajax({
+            url: '/check_king',
+            method: 'GET',
+            data: { game_no: game_no, turn_no: turn_no },
+            success: function (response) {
+                if (response.kingTaken && response.kingTaken !== "null") {
+                    window.location.href = `/winner.html?game_no=${game_no}&winner=${response.winner}`;
+                }
+                checkWinner();
+            },
+            error: function () {
+                console.log("I AM AN ERROR");
+            }
+        });
+    }
+
+    function checkKingBeforeRedirect() {
+        $.ajax({
+            url: '/check_king',
+            method: 'GET',
+            data: { game_no: game_no, turn_no: turn_no + 1 },
+            success: function (response) {
+                if (response.kingTaken && response.kingTaken !== "null") {
+                    window.location.href = `/winner.html?game_no=${game_no}&winner=${response.winner}`;
+                } else {
+                    window.location.href = `/player.html?game_no=${game_no}&turn_no=${turn_no + 1}`;
+                }
+            },
+            error: function () {
+                console.log("I AM AN ERROR");
+            }
+        });
+    }
+
     setInterval(function () {
-        checkWinner();
+        checkKing();
     }, 1000);
 });
