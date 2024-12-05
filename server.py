@@ -7,7 +7,7 @@ import datetime;
 import os;
 import sqlite3;
 
-GAME_TIME = 10
+GAME_TIME = 300
 
 conn = sqlite3.connect('chess.db')
 cur = conn.cursor()
