@@ -62,6 +62,24 @@ $(document).ready(function () {
                 if (response.kingTaken && response.kingTaken !== "null") {
                     window.location.href = `/winner.html?game_no=${game_no}&winner=${response.winner}`;
                 } else {
+                    checkWinnerBeforeRedirect()
+                }
+            },
+            error: function () {
+                console.log("I AM AN ERROR");
+            }
+        });
+    }
+
+    function checkWinnerBeforeRedirect() {
+        $.ajax({
+            url: '/check_winner',
+            method: 'GET',
+            data: { game_no: game_no, turn_no: turn_no + 1 },
+            success: function (response) {
+                if (response.winner && response.winner !== "null") {
+                    window.location.href = `/winner.html?game_no=${game_no}&winner=${response.winner}`;
+                } else {
                     window.location.href = `/player.html?game_no=${game_no}&turn_no=${turn_no + 1}`;
                 }
             },
