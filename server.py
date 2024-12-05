@@ -248,7 +248,7 @@ class MyHandler( BaseHTTPRequestHandler ):
                     <div class="min-h-screen flex items-center justify-center">
                         <div class="text-center">
                             <div class="flex justify-center">
-                                <img src="../img/chesspieces/wikipedia/wQ.png" alt="White Queen" class="animate-bounce drop-shadow-md shadow-lg shadow-white-500/50">
+                                <img src="../img/chesspieces/wikipedia/wQ.png" alt="White Queen" class="animate-bounce drop-shadow-md">
                             </div>
                             <h1 class="text-4xl font-bold text-white my-4 drop-shadow-md"><a class="text-cyan-500">{winner}</a> has won the game!</h1>
                             <h3 class="text-xl font-bold text-gray-100 my-4 drop-shadow-md">Game Number: #{game_no}</h3>
@@ -423,6 +423,92 @@ class MyHandler( BaseHTTPRequestHandler ):
             </html>
             """
 
+            self.send_response(200)
+            self.send_header("Content-type", "text/html")
+            self.send_header("Content-length", len(content))
+            self.end_headers()
+            self.wfile.write(bytes(content, "utf-8"))
+            
+        elif parsed.path in ['/gamelog.html']:
+            query = dict(parse_qsl(parsed.query))
+            game_no = query.get('game_no')
+            
+            conn = sqlite3.connect('chess.db')
+            cur = conn.cursor()
+            
+            # get all the moves
+            cur.execute("""
+                SELECT TURN_NO, TURN, BOARD, WHITE_TIME, BLACK_TIME
+                FROM moves
+                WHERE GAME_NO = ?
+                ORDER BY TURN_NO
+            """, (game_no,))
+            moves = cur.fetchall()
+            
+            # get the result of the game (different table)
+            cur.execute("""
+                SELECT RESULT
+                FROM games
+                WHERE GAME_NO = ?
+            """, (game_no,))
+            result = cur.fetchone()[0]
+            conn.close()
+            
+            # constant
+            content = """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Game Log</title>
+                <link rel="stylesheet" href="css/chessboard-1.0.0.css">
+                <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+                <script src="js/chessboard-1.0.0.js"></script>
+                <script src="https://cdn.tailwindcss.com"></script>
+            </head>
+            <body class="bg-[#D9C6B0]">
+                <div class="flex justify-center items-center my-8">
+                    <img src="../img/chesspieces/wikipedia/wK.png" alt="King">
+                    <h1 class="text-center font-bold text-5xl">Game Log</h1>
+                    <img src="../img/chesspieces/wikipedia/bK.png" alt="King">
+                </div>
+                <div class="px-20">
+            """
+            
+            # dynamic
+            for move in moves:
+                turn_no, turn, board, wtime, btime = move
+                content += f"""
+                <div class="my-4 flex justify-center items-center">
+                    <div class="text-center">
+                    <h2 class="text-2xl font-bold">Turn {turn_no}: {"White's Turn" if turn == 'w' else "Black's Turn"}</h2>
+                    <div id="board{turn_no}" style="width: 400px"></div>
+                    <p>White Time: {(wtime if wtime > 0 else 0) // 60}:{("0" + str((wtime if wtime > 0 else 0) % 60))[-2:]}</p>
+                    <p>Black Time: {(btime if btime > 0 else 0) // 60}:{("0" + str((btime if btime > 0 else 0) % 60))[-2:]}</p>
+                    <script>
+                        var boardConfig{turn_no} = {{
+                            draggable: false,
+                            position: '{board}'
+                        }};
+                        var board{turn_no} = Chessboard('board{turn_no}', boardConfig{turn_no});
+                    </script>
+                    </div>
+                </div>
+                """
+            
+            # constant
+            content += f"""
+                <div class="my-4 text-center">
+                    <h2 class="text-2xl text-gray-100 drop-shadow-sm font-bold">Winner: {result}</h2>
+                </div>
+                <div class="flex justify-center mb-8">
+                    <a href="history.html" class="bg-cyan-500 hover:bg-cyan-600 hover:scale-110 transition text-white font-bold py-2 px-4 rounded mr-4">Game History</a>
+                    <a href="index.html" class="bg-emerald-500 hover:bg-emerald-600 hover:scale-110 transition text-white font-bold py-2 px-4 rounded">Home</a>
+                </div>
+                </div>
+            </body>
+            </html>
+            """
+            
             self.send_response(200)
             self.send_header("Content-type", "text/html")
             self.send_header("Content-length", len(content))
