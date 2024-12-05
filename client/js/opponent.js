@@ -10,16 +10,33 @@ $(document).ready(function () {
             success: function (response) {
                 if (response.new_move && response.new_move !== "null") {
                     window.location.href = `/player.html?game_no=${game_no}&turn_no=${turn_no + 1}`;
-                } else {
-                    setTimeout(checkNewMove, 1000);
                 }
             },
             error: function () {
                 console.log("I AM AN ERROR");
-                setTimeout(checkNewMove, 1000);
             }
         });
     }
 
-    checkNewMove();
+    function checkWinner() {
+        $.ajax({
+            url: '/check_winner',
+            method: 'GET',
+            data: { game_no: game_no },
+            success: function (response) {
+                if (response.winner && response.winner !== "null") {
+                    window.location.href = `/winner.html?game_no=${game_no}&winner=${response.winner}`;
+                } else {
+                    checkNewMove();
+                }
+            },
+            error: function () {
+                console.log("I AM AN ERROR");
+            }
+        });
+    }
+
+    setInterval(function () {
+        checkWinner();
+    }, 1000);
 });

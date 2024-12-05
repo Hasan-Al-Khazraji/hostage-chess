@@ -236,104 +236,105 @@ class MyHandler( BaseHTTPRequestHandler ):
                 new_btime = 300
                 winner = None
             
-            if winner:
-                content = f"""
-                <html>
-                <head>
-                    <title>Winner</title>
-                    <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
-                    <script src="https://cdn.tailwindcss.com"></script>
-                </head>
-                <body class="bg-[#D9C6B0]">
-                    <div class="min-h-screen flex items-center justify-center">
-                        <div class="text-center">
-                            <div class="flex justify-center">
-                                <img src="../img/chesspieces/wikipedia/wQ.png" alt="White Queen" class="animate-bounce drop-shadow-md">
-                            </div>
-                            <h1 class="text-4xl font-bold text-white my-4 drop-shadow-md"><a class="text-cyan-500">{winner}</a> has won the game!</h1>
-                            <h3 class="text-xl font-bold text-gray-100 my-4 drop-shadow-md">Game Number: #{game_no}</h3>
-                            <div class="flex justify-center">
-                                <a href="history.html" class="bg-cyan-500 hover:bg-cyan-600 hover:scale-110 transition text-white font-bold py-2 px-4 rounded mr-4">Game History</a>
-                                <a href="index.html" class="bg-emerald-500 hover:bg-emerald-600 hover:scale-110 transition text-white font-bold py-2 px-4 rounded">Home</a>
-                            </div>
-                        </div>
-                    </div>
-                </body>
-                </html>
-                """
-            else:
-                # Generate normal opponent
-                content = f"""
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>Hostage Chess - {"White's Turn" if turn == 'w' else "Black's Turn"}</title>
-                    <link rel="stylesheet" href="css/chessboard-1.0.0.css">
-                    <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
-                    <script>
-                            window.gameNumber = {game_no};
-                            window.turnNumber = {turn_no};
-                        </script>
-                    <script src="js/opponent.js"></script>
-                </head>
-                <body>
-                    <h1>Opponent's Turn</h1>
-                    <div id="myBoard" style="width: 400px"></div>
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        <p>White: <span id='wMins'>{new_wtime // 60}</span>:<span id='wSecs'>{("0" + str(new_wtime % 60))[-2:]}</span></p>
-                        <form action="/opponent.html" method="GET" onsubmit="return onFormSubmit()">
-                            <input type="hidden" id="board" name="board">
-                            
-                            <input type="hidden" name="game_no" value="{game_no}">
-                            
-                            <input type="hidden" name="turn_no" value="{int(turn_no) + 1}">
-                            
-                            <input type="submit" value="Done" disabled>
-                        </form>
-                        <p><span id='bMins'>{new_btime // 60}</span>:<span id='bSecs'>{("0" + str(new_btime % 60))[-2:]}</span> :Black</p>
-                    </div>
-
-                    <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-                    <script src="js/chessboard-1.0.0.js"></script>
-                    <script>
-                        let turn = "{turn}";
-                        let wtime = {new_wtime};
-                        let btime = {new_btime};
-                        
-                        setInterval(() => {{
-                            if (turn === 'w' && wtime > 0){{
-                                wtime--;
-                                document.getElementById('wMins').innerHTML = Math.floor(wtime / 60);
-                                document.getElementById('wSecs').innerHTML = ("0" + (wtime % 60).toString()).slice(-2)
-                            }}
-                            else if (turn === 'b' && btime > 0) {{
-                                btime--;
-                                document.getElementById('bMins').innerHTML = Math.floor(btime / 60);
-                                document.getElementById('bSecs').innerHTML = ("0" + (btime % 60).toString()).slice(-2)
-                            }}
-                        }}, 1000);
-
-                        var config = {{
-                            draggable: false,
-                            dropOffBoard: 'snapback',
-                            position: '{board}'
-                        }};
-                        var board = Chessboard('myBoard', config);
-
-                        function onFormSubmit() {{
-                            document.getElementById('board').value = board.fen();
-                            return true;
-                        }}
+            # Generate normal opponent
+            content = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Hostage Chess - {"White's Turn" if turn == 'w' else "Black's Turn"}</title>
+                <link rel="stylesheet" href="css/chessboard-1.0.0.css">
+                <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+                <script>
+                        window.gameNumber = {game_no};
+                        window.turnNumber = {turn_no};
                     </script>
-                </body>
-                </html>
-                """
+                <script src="js/opponent.js"></script>
+            </head>
+            <body>
+                <h1>Opponent's Turn</h1>
+                <div id="myBoard" style="width: 400px"></div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <p>White: <span id='wMins'>{new_wtime // 60}</span>:<span id='wSecs'>{("0" + str(new_wtime % 60))[-2:]}</span></p>
+                    <form action="/opponent.html" method="GET" onsubmit="return onFormSubmit()">
+                        <input type="hidden" id="board" name="board">
+                        
+                        <input type="hidden" name="game_no" value="{game_no}">
+                        
+                        <input type="hidden" name="turn_no" value="{int(turn_no) + 1}">
+                        
+                        <input type="submit" value="Done" disabled>
+                    </form>
+                    <p><span id='bMins'>{new_btime // 60}</span>:<span id='bSecs'>{("0" + str(new_btime % 60))[-2:]}</span> :Black</p>
+                </div>
+
+                <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+                <script src="js/chessboard-1.0.0.js"></script>
+                <script>
+                    let turn = "{turn}";
+                    let wtime = {new_wtime};
+                    let btime = {new_btime};
+                    
+                    setInterval(() => {{
+                        if (turn === 'w' && wtime > 0){{
+                            wtime--;
+                            document.getElementById('wMins').innerHTML = Math.floor(wtime / 60);
+                            document.getElementById('wSecs').innerHTML = ("0" + (wtime % 60).toString()).slice(-2)
+                        }}
+                        else if (turn === 'b' && btime > 0) {{
+                            btime--;
+                            document.getElementById('bMins').innerHTML = Math.floor(btime / 60);
+                            document.getElementById('bSecs').innerHTML = ("0" + (btime % 60).toString()).slice(-2)
+                        }}
+                    }}, 1000);
+
+                    var config = {{
+                        draggable: false,
+                        dropOffBoard: 'snapback',
+                        position: '{board}'
+                    }};
+                    var board = Chessboard('myBoard', config);
+
+                    function onFormSubmit() {{
+                        document.getElementById('board').value = board.fen();
+                        return true;
+                    }}
+                </script>
+            </body>
+            </html>
+            """
 
             self.send_response(200)
             self.send_header("Content-type", "text/html")
             self.send_header("Content-length", len(content))
             self.end_headers()
             self.wfile.write(bytes(content, "utf-8"))
+            
+        elif parsed.path.startswith('/check_winner'):
+            query = dict(parse_qsl(parsed.query))
+            game_no = query.get('game_no')
+            
+            conn = sqlite3.connect('chess.db')
+            cursor = conn.cursor()
+            
+            # Fetch the winner
+            cursor.execute("""
+            SELECT RESULT
+            FROM games
+            WHERE GAME_NO = ?
+            """, (game_no,))
+            winner = cursor.fetchone()[0]
+            conn.close()
+            
+            theWinner = "null" if winner is None else "\"" + str(winner) + "\""
+            content = f'{{"winner": {theWinner}}}'
+            print(content)
+            
+            self.send_response(200)
+            self.send_header("Content-type", "application/json")
+            self.send_header("Content-length", len(content))
+            self.end_headers()
+            self.wfile.write(bytes(content, "utf-8"))
+
             
         elif parsed.path.startswith('/check_new_move'):
             query = dict(parse_qsl(parsed.query))
@@ -349,19 +350,10 @@ class MyHandler( BaseHTTPRequestHandler ):
             """, (game_no,))
             counts = cursor.fetchone()[0]
             move_exists = int(counts) > int(turn_no)
-            
-            # Fetch the winner
-            cursor.execute("""
-            SELECT RESULT
-            FROM games
-            WHERE GAME_NO = ?
-            """, (game_no,))
-            winner = cursor.fetchone()[0]
             conn.close()
             
             new_move = "null" if move_exists is False else "\"" + str(move_exists) + "\""
-            theWinner = "null" if winner is None else "\"" + str(winner) + "\""
-            content = f'{{"new_move": {new_move}, "winner": {theWinner}}}'
+            content = f'{{"new_move": {new_move}}}'
             print(content)
             
             self.send_response(200)
@@ -507,6 +499,43 @@ class MyHandler( BaseHTTPRequestHandler ):
                 </div>
             </body>
             </html>
+            """
+            
+            self.send_response(200)
+            self.send_header("Content-type", "text/html")
+            self.send_header("Content-length", len(content))
+            self.end_headers()
+            self.wfile.write(bytes(content, "utf-8"))
+        
+        elif parsed.path in ['/winner.html']:
+            query = dict(parse_qsl(parsed.query))
+            game_no = query.get('game_no')
+            winner = query.get('winner')
+            
+            # constant
+            content = f"""
+                <html>
+                    <head>
+                        <title>Winner</title>
+                        <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+                        <script src="https://cdn.tailwindcss.com"></script>
+                    </head>
+                    <body class="bg-[#D9C6B0]">
+                        <div class="min-h-screen flex items-center justify-center">
+                            <div class="text-center">
+                                <div class="flex justify-center">
+                                    <img src="../img/chesspieces/wikipedia/wQ.png" alt="White Queen" class="animate-bounce drop-shadow-md">
+                                </div>
+                                <h1 class="text-4xl font-bold text-white my-4 drop-shadow-md"><a class="text-cyan-500">{winner}</a> has won the game!</h1>
+                                <h3 class="text-xl font-bold text-gray-100 my-4 drop-shadow-md">Game Number: #{game_no}</h3>
+                                <div class="flex justify-center">
+                                    <a href="history.html" class="bg-cyan-500 hover:bg-cyan-600 hover:scale-110 transition text-white font-bold py-2 px-4 rounded mr-4">Game History</a>
+                                    <a href="index.html" class="bg-emerald-500 hover:bg-emerald-600 hover:scale-110 transition text-white font-bold py-2 px-4 rounded">Home</a>
+                                </div>
+                            </div>
+                        </div>
+                    </body>
+                </html>
             """
             
             self.send_response(200)
